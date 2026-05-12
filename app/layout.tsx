@@ -21,7 +21,12 @@ export const metadata: Metadata = {
   title: "Dondoka Recepções — Celebre o essencial",
   description:
     "Espaço premium para eventos sociais e corporativos em Belo Horizonte. Capacidade para 70 pessoas, ambiente climatizado e decoração personalizada.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  metadataBase: new URL(
+    (() => {
+      const raw = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      return raw.startsWith("http") ? raw : `https://${raw}`;
+    })()
+  ),
 };
 
 export const viewport = {
