@@ -1,0 +1,405 @@
+"use client";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+import { ItensEditor } from "./ItensEditor";
+import { FotosPicker } from "./FotosPicker";
+import { brl, slugify } from "@/lib/format";
+import { SECOES_DEFAULT, type Orcamento, type SecoesVisiveis, type ItemOrcamento, type StatusOrcamento, type ConfigGlobal } from "@/types/orcamento";
+
+type Mode = "criar" | "editar";
+
+type Props = {
+  mode: Mode;
+  orcamento?: Orcamento;
+  config: ConfigGlobal;
+};
+
+const SECOES_LABEL: Array<[keyof SecoesVisiveis, string]> = [
+  ["sobre", "Sobre o espaço"],
+  ["galeria", "Galeria de fotos"],
+  ["decoracao", "Decoração"],
+  ["dados", "Dados do evento"],
+  ["investimento", "Resumo do investimento"],
+  ["pagamento", "Forma de pagamento"],
+  ["contato", "Contato"],
+];
+
+const STATUS_OPTIONS: StatusOrcamento[] = ["rascunho", "enviado", "aceito", "recusado"];
+
+export function OrcamentoForm({ mode, orcamento, config }: Props) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  const [form, setForm] = useState({
+    status: (orcamento?.status || "rascunho") as StatusOrcamento,
+    cliente_nome: orcamento?.cliente_nome || "",
+    cliente_evento: orcamento?.cliente_evento || "",
+    cliente_data: orcamento?.cliente_data || "",
+    cliente_horario: orcamento?.cliente_horario || "",
+    cliente_convidados: orcamento?.cliente_convidados ?? 0,
+    secoes_visiveis: (orcamento?.secoes_visiveis || SECOES_DEFAULT) as SecoesVisiveis,
+    fotos_selecionadas: orcamento?.fotos_selecionadas || config.fotos_default || [],
+    sobre_texto: orcamento?.sobre_texto ?? "",
+    decoracao_texto: orcamento?.decoracao_texto ?? "",
+    itens_espaco: (orcamento?.itens_espaco || []) as ItemOrcamento[],
+    itens_decoracao: (orcamento?.itens_decoracao || []) as ItemOrcamento[],
+    itens_buffet: (orcamento?.itens_buffet || []) as ItemOrcamento[],
+    condicoes_pagamento: orcamento?.condicoes_pagamento ?? "",
+    observacoes: orcamento?.observacoes ?? "",
+  });
+
+  function up<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
+    setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  const total =
+    [form.itens_espaco, form.itens_decoracao, form.itens_buffet]
+      .flat()
+      .reduce((acc, i) => acc + (i.qtd || 0) * (i.valor_unitario || 0), 0);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErro(null);
+    if (!form.cliente_nome.trim()) {
+      setErro("Informe o nome do cliente.");
+      return;
+    }
+    setSalvando(true);
+
+    const payload = {
+      ...form,
+      cliente_convidados: form.cliente_convidados || null,
+      cliente_data: form.cliente_data || null,
+      cliente_horario: form.cliente_horario || null,
+      cliente_evento: form.cliente_evento || null,
+      sobre_texto: form.sobre_texto || null,
+      decoracao_texto: form.decoracao_texto || null,
+      condicoes_pagamento: form.condicoes_pagamento || null,
+      observacoes: form.observacoes || null,
+    };
+
+    const url = mode === "criar" ? "/api/admin/orcamentos" : `/api/admin/orcamentos/${orcamento!.id}`;
+    const res = await fetch(url, {
+      method: mode === "criar" ? "POST" : "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    setSalvando(false);
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setErro(body.error || "Erro ao salvar.");
+      return;
+    }
+    const data = await res.json();
+    startTransition(() => {
+      router.push(`/admin/${data.id}`);
+      router.refresh();
+    });
+  }
+
+  async function handleDelete() {
+    if (!orcamento) return;
+    if (!confirm("Tem certeza que deseja excluir este orçamento?")) return;
+    await fetch(`/api/admin/orcamentos/${orcamento.id}`, { method: "DELETE" });
+    router.push("/admin");
+    router.refresh();
+  }
+
+  async function handleDuplicate() {
+    if (!orcamento) return;
+    const res = await fetch(`/api/admin/orcamentos/${orcamento.id}/duplicate`, { method: "POST" });
+    if (res.ok) {
+      const data = await res.json();
+      router.push(`/admin/${data.id}`);
+    }
+  }
+
+  const publicUrl = orcamento
+    ? `${process.env.NEXT_PUBLIC_APP_URL || ""}/orcamento/${orcamento.slug}`
+    : null;
+
+  function copiarLink() {
+    if (!publicUrl) return;
+    const msg = `Olá, ${form.cliente_nome.split(" ")[0]}! Preparei sua proposta personalizada da Dondoka Recepções. ✨\n\nAcesse aqui: ${publicUrl}\n\nQualquer dúvida, é só chamar!`;
+    navigator.clipboard.writeText(msg);
+    alert("Mensagem copiada! Cole no WhatsApp do cliente.");
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+          <Link href="/admin" className="text-sm text-oliva hover:underline">
+            ← Voltar
+          </Link>
+          <h1 className="mt-2 text-3xl md:text-4xl font-serif text-carvao">
+            {mode === "criar" ? "Novo orçamento" : form.cliente_nome || "Editar orçamento"}
+          </h1>
+          {orcamento && (
+            <p className="text-xs text-carvao/55 mt-1">
+              slug: <code className="font-mono">{orcamento.slug}</code>
+            </p>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {publicUrl && (
+            <>
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center px-4 h-10 rounded-full border border-oliva/40 text-oliva hover:bg-oliva hover:text-white text-sm transition"
+              >
+                Ver link público
+              </a>
+              <Button type="button" variant="outline" onClick={copiarLink}>
+                Copiar para WhatsApp
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Status + Dados do cliente */}
+      <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <Field label="Cliente" required>
+            <input
+              type="text"
+              required
+              value={form.cliente_nome}
+              onChange={(e) => up("cliente_nome", e.target.value)}
+              className="form-input"
+            />
+          </Field>
+          <Field label="Tipo de evento">
+            <input
+              type="text"
+              placeholder="Aniversário, casamento, corporativo..."
+              value={form.cliente_evento}
+              onChange={(e) => up("cliente_evento", e.target.value)}
+              className="form-input"
+            />
+          </Field>
+          <Field label="Data">
+            <input
+              type="date"
+              value={form.cliente_data}
+              onChange={(e) => up("cliente_data", e.target.value)}
+              className="form-input"
+            />
+          </Field>
+          <Field label="Horário">
+            <input
+              type="text"
+              placeholder="Ex: 19h às 23h"
+              value={form.cliente_horario}
+              onChange={(e) => up("cliente_horario", e.target.value)}
+              className="form-input"
+            />
+          </Field>
+          <Field label="Convidados">
+            <input
+              type="number"
+              min={0}
+              value={form.cliente_convidados || ""}
+              onChange={(e) => up("cliente_convidados", Number(e.target.value) || 0)}
+              className="form-input"
+            />
+          </Field>
+          <Field label="Status">
+            <select
+              value={form.status}
+              onChange={(e) => up("status", e.target.value as StatusOrcamento)}
+              className="form-input capitalize"
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+      </section>
+
+      {/* Seções visíveis */}
+      <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">
+        <h2 className="font-serif text-xl text-carvao">Seções visíveis</h2>
+        <p className="text-sm text-carvao/55 mt-1">
+          Marque o que deve aparecer para este cliente. Tudo que estiver desligado some do link público e do PDF.
+        </p>
+        <div className="mt-5 grid grid-cols-2 md:grid-cols-3 gap-2">
+          {SECOES_LABEL.map(([key, label]) => {
+            const checked = form.secoes_visiveis[key];
+            return (
+              <label
+                key={key}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition ${
+                  checked
+                    ? "border-oliva bg-oliva/5 text-carvao"
+                    : "border-areia/60 text-carvao/50 hover:border-areia"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) =>
+                    up("secoes_visiveis", { ...form.secoes_visiveis, [key]: e.target.checked })
+                  }
+                  className="accent-oliva"
+                />
+                <span className="text-sm">{label}</span>
+              </label>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Itens — Espaço, Decoração, Buffet */}
+      <section>
+        <h2 className="font-serif text-xl text-carvao mb-4">Itens do orçamento</h2>
+        <div className="space-y-4">
+          <ItensEditor
+            titulo="Espaço"
+            itens={form.itens_espaco}
+            onChange={(v) => up("itens_espaco", v)}
+          />
+          <ItensEditor
+            titulo="Decoração"
+            itens={form.itens_decoracao}
+            onChange={(v) => up("itens_decoracao", v)}
+          />
+          <ItensEditor
+            titulo="Buffet"
+            itens={form.itens_buffet}
+            onChange={(v) => up("itens_buffet", v)}
+          />
+        </div>
+        <div className="mt-4 px-6 py-4 rounded-2xl bg-carvao text-white flex justify-between items-center">
+          <span className="eyebrow text-areia">Total geral</span>
+          <span className="text-2xl font-serif tabular-nums">{brl(total)}</span>
+        </div>
+      </section>
+
+      {/* Textos */}
+      <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft space-y-5">
+        <h2 className="font-serif text-xl text-carvao">Textos personalizados (opcional)</h2>
+        <p className="text-sm text-carvao/55 -mt-3">
+          Deixe em branco para usar os textos padrão das Configurações.
+        </p>
+        <Field label="Sobre o espaço (override)">
+          <textarea
+            rows={6}
+            value={form.sobre_texto}
+            placeholder={config.sobre_texto || ""}
+            onChange={(e) => up("sobre_texto", e.target.value)}
+            className="form-input min-h-[140px]"
+          />
+        </Field>
+        <Field label="Decoração (override)">
+          <textarea
+            rows={6}
+            value={form.decoracao_texto}
+            placeholder={config.decoracao_texto || ""}
+            onChange={(e) => up("decoracao_texto", e.target.value)}
+            className="form-input min-h-[140px]"
+          />
+        </Field>
+        <Field label="Condições de pagamento (override)">
+          <textarea
+            rows={4}
+            value={form.condicoes_pagamento}
+            placeholder={config.condicoes_pagamento || ""}
+            onChange={(e) => up("condicoes_pagamento", e.target.value)}
+            className="form-input min-h-[120px]"
+          />
+        </Field>
+      </section>
+
+      {/* Fotos */}
+      <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">
+        <h2 className="font-serif text-xl text-carvao mb-1">Fotos do orçamento</h2>
+        <p className="text-sm text-carvao/55 mb-5">
+          Selecione quais fotos aparecem na galeria deste orçamento.
+        </p>
+        <FotosPicker
+          selecionadas={form.fotos_selecionadas}
+          onChange={(v) => up("fotos_selecionadas", v)}
+        />
+      </section>
+
+      {/* Observações */}
+      <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">
+        <Field label="Observações internas (não aparecem para o cliente)">
+          <textarea
+            rows={3}
+            value={form.observacoes}
+            onChange={(e) => up("observacoes", e.target.value)}
+            className="form-input min-h-[100px]"
+          />
+        </Field>
+      </section>
+
+      {erro && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl px-4 py-3 text-sm">
+          {erro}
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="sticky bottom-0 -mx-4 md:-mx-6 px-4 md:px-6 py-4 bg-white/90 backdrop-blur border-t border-areia/60 flex flex-wrap gap-3 justify-end">
+        {mode === "editar" && (
+          <>
+            <Button type="button" variant="ghost" onClick={handleDelete}>
+              Excluir
+            </Button>
+            <Button type="button" variant="outline" onClick={handleDuplicate}>
+              Duplicar
+            </Button>
+          </>
+        )}
+        <Button type="submit" disabled={salvando || isPending}>
+          {salvando ? "Salvando..." : "Salvar orçamento"}
+        </Button>
+      </div>
+
+      <style jsx global>{`
+        .form-input {
+          width: 100%;
+          min-height: 2.75rem;
+          padding: 0.5rem 0.875rem;
+          border-radius: 0.5rem;
+          border: 1px solid rgba(219, 209, 195, 0.7);
+          background: #f7f4ee;
+          font-size: 0.95rem;
+        }
+        .form-input:focus {
+          outline: none;
+          border-color: #7f7957;
+        }
+        textarea.form-input {
+          line-height: 1.55;
+          padding: 0.75rem 0.875rem;
+        }
+      `}</style>
+    </form>
+  );
+}
+
+function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
+  return (
+    <label className="block">
+      <span className="eyebrow text-bronze">
+        {label}
+        {required && <span className="text-rose-500 normal-case tracking-normal ml-1">*</span>}
+      </span>
+      <div className="mt-1.5">{children}</div>
+    </label>
+  );
+}

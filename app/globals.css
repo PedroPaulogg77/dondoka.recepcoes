@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --oliva: #7F7957;
+  --areia: #DBD1C3;
+  --bronze: #907655;
+  --carvao: #010101;
+  --creme: #F7F4EE;
+  --branco: #FFFFFF;
+}
+
+html, body {
+  background: var(--creme);
+  color: var(--carvao);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: clamp(15px, 2.2vw, 17px);
+  line-height: 1.65;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-playfair), "Playfair Display", serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--oliva);
+}
+
+/* ===== Premium utilities ===== */
+.eyebrow {
+  font-family: var(--font-inter), Inter, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--bronze);
+  font-weight: 500;
+}
+
+.divider-ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--bronze);
+}
+.divider-ornament::before,
+.divider-ornament::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  opacity: 0.4;
+}
+
+.pattern-claro {
+  background-image: url("/patterns/pattern-claro.jpg");
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: soft-light;
+}
+.pattern-escuro {
+  background-image: url("/patterns/pattern-escuro.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
+
+/* ===== Print rules — fidelidade total no PDF ===== */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+  html, body {
+    background: var(--branco) !important;
+    color: var(--carvao) !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .no-print { display: none !important; }
+  .print-break-before { break-before: page; page-break-before: always; }
+  section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .hero-print-compact {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+  }
+  img {
+    max-height: 18cm;
+    object-fit: cover;
+  }
+  a[href]::after { content: ""; }
+}
+
+/* Hide scrollbar on horizontal galleries */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { scrollbar-width: none; }
