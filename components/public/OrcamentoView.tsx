@@ -159,10 +159,17 @@ function EditableWrap({ editor, sectionKey, toggleKey, label, visivel = true, ch
         onEdit={() => editor.onEditSection(sectionKey)}
       />
 
-      {/* Conteúdo com opacity/grayscale quando oculto */}
+      {/* Conteudo com opacity/grayscale quando oculto */}
       <div
-        className={isHidden ? "opacity-30 grayscale pointer-events-none transition" : "transition"}
+        className={
+          isHidden
+            ? "opacity-30 grayscale pointer-events-none transition"
+            : editor && !isHidden
+              ? "transition hover:ring-2 hover:ring-oliva/20 hover:ring-dashed cursor-pointer rounded-lg"
+              : "transition"
+        }
         aria-hidden={isHidden}
+        onClick={editor && !isHidden ? () => editor.onEditSection(sectionKey) : undefined}
       >
         {childContent}
       </div>

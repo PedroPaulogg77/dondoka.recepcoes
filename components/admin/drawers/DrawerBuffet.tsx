@@ -9,13 +9,14 @@ type Props = {
   value: BuffetDados;
   defaultValue: BuffetDados;
   onChange: (v: BuffetDados) => void;
+  onUndo?: () => void;
 };
 
 function deepEqual<T>(a: T, b: T): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-export function DrawerBuffet({ open, onClose, value, defaultValue, onChange }: Props) {
+export function DrawerBuffet({ open, onClose, value, defaultValue, onChange, onUndo }: Props) {
   const isCustom = !deepEqual(value, defaultValue);
   return (
     <Drawer
@@ -23,6 +24,7 @@ export function DrawerBuffet({ open, onClose, value, defaultValue, onChange }: P
       onClose={onClose}
       title="Cardápio do buffet"
       subtitle="Edite os pratos, bebidas e descrição do serviço"
+      onUndo={onUndo}
     >
       <BuffetEditor
         value={value}

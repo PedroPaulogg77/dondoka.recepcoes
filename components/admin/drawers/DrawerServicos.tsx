@@ -9,13 +9,14 @@ type Props = {
   value: ServicosOpcionaisDados;
   defaultValue: ServicosOpcionaisDados;
   onChange: (v: ServicosOpcionaisDados) => void;
+  onUndo?: () => void;
 };
 
 function deepEqual<T>(a: T, b: T): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-export function DrawerServicos({ open, onClose, value, defaultValue, onChange }: Props) {
+export function DrawerServicos({ open, onClose, value, defaultValue, onChange, onUndo }: Props) {
   const isCustom = !deepEqual(value, defaultValue);
   return (
     <Drawer
@@ -23,6 +24,7 @@ export function DrawerServicos({ open, onClose, value, defaultValue, onChange }:
       onClose={onClose}
       title="Serviços opcionais"
       subtitle="Lista de extras (segurança, garçons etc) com ícones automáticos"
+      onUndo={onUndo}
     >
       <ServicosEditor
         value={value}

@@ -48,6 +48,7 @@ export function resolveSecoesVisiveis(value: Partial<SecoesVisiveis> | null | un
  */
 export type FormState = {
   status: Orcamento["status"];
+  publicado: boolean;
   cliente_nome: string;
   cliente_evento: string;
   cliente_data: string;
@@ -76,6 +77,7 @@ export function buildVirtualOrcamento(
     id: existing?.id || "preview",
     slug: existing?.slug || "preview",
     status: form.status || "rascunho",
+    publicado: form.publicado,
     cliente_nome: form.cliente_nome || "Cliente",
     cliente_evento: form.cliente_evento || null,
     cliente_data: form.cliente_data || null,
@@ -112,6 +114,7 @@ function deepEqual<T>(a: T, b: T): boolean {
 export function normalizeForSave(form: FormState, defaults: ResolvedDefaults) {
   return {
     ...form,
+    publicado: form.publicado,
     cliente_convidados: form.cliente_convidados || null,
     cliente_data: form.cliente_data || null,
     cliente_horario: form.cliente_horario || null,
@@ -146,6 +149,7 @@ export function buildInitialForm(
   const defaults = resolveDefaults(config);
   return {
     status: orcamento?.status || "rascunho",
+    publicado: orcamento?.publicado ?? false,
     cliente_nome: orcamento?.cliente_nome || "",
     cliente_evento: orcamento?.cliente_evento || "",
     cliente_data: orcamento?.cliente_data || "",

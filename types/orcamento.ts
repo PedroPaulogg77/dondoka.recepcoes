@@ -36,6 +36,7 @@ export type Orcamento = {
   id: string;
   slug: string;
   status: StatusOrcamento;
+  publicado: boolean;
 
   cliente_nome: string;
   cliente_evento: string | null;

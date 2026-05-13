@@ -10,15 +10,17 @@ type Props = {
   onClose: () => void;
   form: FormState;
   update: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
+  onUndo?: () => void;
 };
 
-export function DrawerCliente({ open, onClose, form, update }: Props) {
+export function DrawerCliente({ open, onClose, form, update, onUndo }: Props) {
   return (
     <Drawer
       open={open}
       onClose={onClose}
       title="Dados do cliente e evento"
       subtitle="Aparecem no topo e na seção 'Dados do evento' da proposta"
+      onUndo={onUndo}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Cliente" required>

@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 
 type Props = {
   label: string;
@@ -8,6 +9,17 @@ type Props = {
 };
 
 export function SectionChip({ label, visivel, onToggle, onEdit }: Props) {
+  const [showPulse, setShowPulse] = useState(false);
+
+  useEffect(() => {
+    if (!onEdit) return;
+    const used = localStorage.getItem("dondoka-editor-used");
+    if (!used) {
+      setShowPulse(true);
+      const timer = setTimeout(() => setShowPulse(false), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [onEdit]);
   return (
     <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between gap-2 pointer-events-none">
       {/* Toggle de visibilidade OU label estático (sem toggle quando seção é fixa, ex: Hero) */}
@@ -47,10 +59,17 @@ export function SectionChip({ label, visivel, onToggle, onEdit }: Props) {
       {onEdit && (
         <button
           type="button"
-          onClick={onEdit}
+          onClick={() => {
+            localStorage.setItem("dondoka-editor-used", "1");
+            setShowPulse(false);
+            onEdit();
+          }}
           aria-label={`Editar ${label}`}
-          className="pointer-events-auto w-9 h-9 inline-flex items-center justify-center rounded-full bg-white text-oliva shadow-soft hover:bg-creme hover:scale-105 active:scale-95 transition border border-areia/40"
+          className="pointer-events-auto relative w-9 h-9 inline-flex items-center justify-center rounded-full bg-white text-oliva shadow-soft hover:bg-creme hover:scale-105 active:scale-95 transition border border-areia/40"
         >
+          {showPulse && (
+            <span className="absolute inset-0 rounded-full border-2 border-oliva animate-ping opacity-30" aria-hidden />
+          )}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
             <path d="M12 20h9" />
             <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />

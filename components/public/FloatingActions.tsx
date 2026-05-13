@@ -1,5 +1,6 @@
 "use client";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Props = {
   whatsapp: string | null;
@@ -7,7 +8,16 @@ type Props = {
 };
 
 export function FloatingActions({ whatsapp, mensagem }: Props) {
+  const [showTip, setShowTip] = useState(false);
+
   async function imprimirPDF() {
+    // Show helper tooltip first
+    setShowTip(true);
+
+    // Wait 4 seconds so user reads the tip
+    await new Promise((r) => setTimeout(r, 4000));
+    setShowTip(false);
+
     // Avisa componentes que estamos prestes a imprimir
     // (Investimento e outros escutam pra forçar estado expandido)
     window.dispatchEvent(new Event("prepare-print"));
@@ -39,17 +49,38 @@ export function FloatingActions({ whatsapp, mensagem }: Props) {
           Falar no WhatsApp
         </a>
       )}
-      <button
-        type="button"
-        onClick={imprimirPDF}
-        className="inline-flex items-center justify-center gap-2 px-5 h-12 rounded-full bg-carvao text-white shadow-premium hover:bg-oliva transition font-medium text-sm"
-        aria-label="Baixar PDF"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-        </svg>
-        PDF
-      </button>
+      <div className="relative">
+        <AnimatePresence>
+          {showTip && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.25 }}
+              className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-56"
+            >
+              <div className="bg-carvao text-white text-xs rounded-xl px-3 py-2 text-center leading-relaxed shadow-premium">
+                Na próxima tela, selecione <strong>&quot;Salvar como PDF&quot;</strong> em vez de uma impressora
+              </div>
+              {/* Arrow pointing down */}
+              <div className="flex justify-center">
+                <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-carvao" />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <button
+          type="button"
+          onClick={imprimirPDF}
+          className="inline-flex items-center justify-center gap-2 px-5 h-12 rounded-full bg-carvao text-white shadow-premium hover:bg-oliva transition font-medium text-sm"
+          aria-label="Salvar PDF"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+          </svg>
+          Salvar PDF
+        </button>
+      </div>
     </motion.div>
   );
 }

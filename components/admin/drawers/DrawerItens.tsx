@@ -16,6 +16,7 @@ type Props = {
   onChangeEspaco: (v: ItemOrcamento[]) => void;
   onChangeDecoracao: (v: ItemOrcamento[]) => void;
   onChangeBuffet: (v: ItemOrcamento[]) => void;
+  onUndo?: () => void;
 };
 
 function subtotal(itens: ItemOrcamento[]) {
@@ -31,6 +32,7 @@ export function DrawerItens({
   onChangeEspaco,
   onChangeDecoracao,
   onChangeBuffet,
+  onUndo,
 }: Props) {
   const [tab, setTab] = useState<Categoria>("espaco");
 
@@ -42,6 +44,7 @@ export function DrawerItens({
       onClose={onClose}
       title="Itens e valores"
       subtitle="Os valores aparecem agrupados no 'Resumo da proposta'"
+      onUndo={onUndo}
     >
       {/* Tabs */}
       <div className="-mt-1 mb-5 grid grid-cols-3 gap-1 p-1 rounded-full bg-areia/40">

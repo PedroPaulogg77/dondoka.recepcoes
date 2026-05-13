@@ -12,6 +12,7 @@ type Props = {
   itens: ItemOrcamento[];
   onChangeTexto: (v: string) => void;
   onChangeItens: (v: ItemOrcamento[]) => void;
+  onUndo?: () => void;
 };
 
 export function DrawerDecoracao({
@@ -22,6 +23,7 @@ export function DrawerDecoracao({
   itens,
   onChangeTexto,
   onChangeItens,
+  onUndo,
 }: Props) {
   return (
     <Drawer
@@ -29,6 +31,7 @@ export function DrawerDecoracao({
       onClose={onClose}
       title="Decoração"
       subtitle="Texto descritivo + itens inclusos no pacote"
+      onUndo={onUndo}
     >
       <div className="space-y-7">
         <EditableTextField

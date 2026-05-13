@@ -6,15 +6,17 @@ type Props = {
   onClose: () => void;
   value: string;
   onChange: (v: string) => void;
+  onUndo?: () => void;
 };
 
-export function DrawerObservacoes({ open, onClose, value, onChange }: Props) {
+export function DrawerObservacoes({ open, onClose, value, onChange, onUndo }: Props) {
   return (
     <Drawer
       open={open}
       onClose={onClose}
       title="Observações internas"
       subtitle="Anotações suas — não aparecem pro cliente"
+      onUndo={onUndo}
     >
       <label className="block">
         <span className="eyebrow text-bronze">Notas</span>

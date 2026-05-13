@@ -10,9 +10,11 @@ type Props = {
   children: React.ReactNode;
   /** Texto do botão de "concluir" no rodapé (default: "Pronto") */
   doneLabel?: string;
+  /** Se fornecido, mostra botão "Desfazer" no footer que restaura o estado anterior */
+  onUndo?: () => void;
 };
 
-export function Drawer({ open, onClose, title, subtitle, children, doneLabel = "Pronto" }: Props) {
+export function Drawer({ open, onClose, title, subtitle, children, doneLabel = "Pronto", onUndo }: Props) {
   // Lock body scroll quando aberto
   useEffect(() => {
     if (!open) return;
@@ -94,6 +96,15 @@ export function Drawer({ open, onClose, title, subtitle, children, doneLabel = "
 
             {/* Footer */}
             <footer className="px-5 md:px-7 py-3 md:py-4 border-t border-areia/60 bg-creme/80 backdrop-blur flex justify-end gap-2" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+              {onUndo && (
+                <button
+                  type="button"
+                  onClick={() => { onUndo(); onClose(); }}
+                  className="inline-flex items-center justify-center h-11 px-4 rounded-full text-carvao/60 text-sm hover:text-carvao transition"
+                >
+                  Desfazer
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onClose}

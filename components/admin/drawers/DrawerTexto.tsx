@@ -12,6 +12,7 @@ type Props = {
   defaultValue: string;
   onChange: (v: string) => void;
   rows?: number;
+  onUndo?: () => void;
 };
 
 export function DrawerTexto({
@@ -24,9 +25,10 @@ export function DrawerTexto({
   defaultValue,
   onChange,
   rows,
+  onUndo,
 }: Props) {
   return (
-    <Drawer open={open} onClose={onClose} title={title} subtitle={subtitle}>
+    <Drawer open={open} onClose={onClose} title={title} subtitle={subtitle} onUndo={onUndo}>
       <EditableTextField
         label={label}
         value={value}

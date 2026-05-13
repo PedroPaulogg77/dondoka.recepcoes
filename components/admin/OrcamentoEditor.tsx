@@ -1,10 +1,9 @@
 "use client";
-import { useCallback, useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { OrcamentoView, type EditorMode, type SectionEditableKey } from "@/components/public/OrcamentoView";
 import { OrcamentoForm } from "./OrcamentoForm";
-import { Drawer } from "./Drawer";
 import { DrawerCliente } from "./drawers/DrawerCliente";
 import { DrawerTexto } from "./drawers/DrawerTexto";
 import { DrawerFotos } from "./drawers/DrawerFotos";
@@ -13,6 +12,8 @@ import { DrawerBuffet } from "./drawers/DrawerBuffet";
 import { DrawerServicos } from "./drawers/DrawerServicos";
 import { DrawerItens } from "./drawers/DrawerItens";
 import { DrawerObservacoes } from "./drawers/DrawerObservacoes";
+import { DrawerContato } from "./drawers/DrawerContato";
+import { SectionNav } from "./SectionNav";
 import {
   buildInitialForm,
   buildVirtualOrcamento,
@@ -44,6 +45,10 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
   const [form, setForm] = useState<FormState>(initial);
   const [initialSnapshot, setInitialSnapshot] = useState(() => JSON.stringify(initial));
 
+  // Auto-save state (Item 6)
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<null | "saving" | "saved">(null);
+
   const update = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
   }, []);
@@ -73,6 +78,31 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
   const [openDrawer, setOpenDrawer] = useState<SectionEditableKey | null>(null);
   const [openObservacoes, setOpenObservacoes] = useState(false);
 
+  // Snapshot for undo (Item 3)
+  const drawerSnapshot = useRef<string>("");
+
+  // Snapshot form when a drawer opens
+  useEffect(() => {
+    if (openDrawer) {
+      drawerSnapshot.current = JSON.stringify(form);
+    }
+  }, [openDrawer]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Also snapshot when observacoes drawer opens
+  useEffect(() => {
+    if (openObservacoes) {
+      drawerSnapshot.current = JSON.stringify(form);
+    }
+  }, [openObservacoes]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function undoDrawer() {
+    if (!drawerSnapshot.current) return;
+    try {
+      const restored = JSON.parse(drawerSnapshot.current) as FormState;
+      setForm(restored);
+    } catch { /* noop */ }
+  }
+
   function onEditSection(key: SectionEditableKey) {
     setOpenDrawer(key);
   }
@@ -88,7 +118,13 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
   };
 
   // ===== Save =====
-  async function handleSave() {
+  async function handleSave(opts?: { publish?: boolean; draftOnly?: boolean }) {
+    // Cancel any pending auto-save
+    if (autoSaveTimer.current) {
+      clearTimeout(autoSaveTimer.current);
+      autoSaveTimer.current = null;
+    }
+
     setErro(null);
     if (!form.cliente_nome.trim()) {
       setErro("Informe o nome do cliente (toque na capa pra editar).");
@@ -96,7 +132,15 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
       return;
     }
     setSalvando(true);
-    const payload = normalizeForSave(form, defaults);
+
+    // Determine publicado value
+    let formToSave = form;
+    if (opts?.publish) {
+      formToSave = { ...form, publicado: true };
+      setForm(formToSave);
+    }
+
+    const payload = normalizeForSave(formToSave, defaults);
     const url = mode === "criar" ? "/api/admin/orcamentos" : `/api/admin/orcamentos/${orcamento!.id}`;
     const res = await fetch(url, {
       method: mode === "criar" ? "POST" : "PATCH",
@@ -110,8 +154,8 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
       return;
     }
     const data = await res.json();
-    setInitialSnapshot(JSON.stringify(form));
-    setToast("Salvo!");
+    setInitialSnapshot(JSON.stringify(formToSave));
+    setToast(opts?.publish ? "Publicado!" : "Salvo!");
     setTimeout(() => setToast(null), 2500);
     if (mode === "criar") {
       startTransition(() => {
@@ -122,6 +166,35 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
       startTransition(() => router.refresh());
     }
   }
+
+  // ===== Auto-save (Item 6) =====
+  async function autoSave() {
+    if (!orcamento) return;
+    setAutoSaveStatus("saving");
+    const payload = normalizeForSave(form, defaults);
+    const res = await fetch(`/api/admin/orcamentos/${orcamento.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      setInitialSnapshot(JSON.stringify(form));
+      setAutoSaveStatus("saved");
+      setTimeout(() => setAutoSaveStatus(null), 2000);
+      startTransition(() => router.refresh());
+    } else {
+      setAutoSaveStatus(null);
+    }
+  }
+
+  useEffect(() => {
+    if (mode !== "editar" || !dirty || !orcamento) return;
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      autoSave();
+    }, 4000);
+    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); };
+  }, [form]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleDelete() {
     if (!orcamento) return;
@@ -144,18 +217,32 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
     ? `${process.env.NEXT_PUBLIC_APP_URL || ""}/orcamento/${orcamento.slug}`
     : null;
 
-  function copiarUrl() {
+  // Helper: auto-mark as enviado when sharing a published proposal (Item 9)
+  async function marcarComoEnviado() {
+    if (form.status !== "rascunho" || !form.publicado || !orcamento) return false;
+    update("status", "enviado");
+    await fetch(`/api/admin/orcamentos/${orcamento.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "enviado" }),
+    });
+    return true;
+  }
+
+  async function copiarUrl() {
     if (!publicUrl) return;
     navigator.clipboard.writeText(publicUrl);
-    setToast("Link do orçamento copiado!");
+    const marcou = await marcarComoEnviado();
+    setToast(marcou ? "Link copiado! Status atualizado para Enviado." : "Link do orçamento copiado!");
     setTimeout(() => setToast(null), 2500);
   }
 
-  function copiarMensagemWpp() {
+  async function copiarMensagemWpp() {
     if (!publicUrl) return;
     const msg = `Olá, ${form.cliente_nome.split(" ")[0]}! Preparei sua proposta personalizada da Dondoka Recepções. ✨\n\nAcesse aqui: ${publicUrl}\n\nQualquer dúvida, é só chamar!`;
     navigator.clipboard.writeText(msg);
-    setToast("Mensagem copiada — cole no WhatsApp do cliente.");
+    const marcou = await marcarComoEnviado();
+    setToast(marcou ? "Mensagem copiada! Status atualizado para Enviado." : "Mensagem copiada — cole no WhatsApp do cliente.");
     setTimeout(() => setToast(null), 3000);
   }
 
@@ -182,11 +269,21 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
                 {dirty && (
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" aria-hidden />
                 )}
-                {dirty
-                  ? "Mudanças por publicar"
-                  : mode === "criar"
-                    ? "Pronto pra publicar"
-                    : "Publicado"}
+                {mode === "criar"
+                  ? "Pronto pra publicar"
+                  : !form.publicado && !dirty
+                    ? "Rascunho — não publicado"
+                    : !form.publicado && dirty
+                      ? "Rascunho — mudanças não salvas"
+                      : form.publicado && dirty
+                        ? "Mudanças não salvas"
+                        : "Publicado ✓"}
+                {autoSaveStatus === "saving" && (
+                  <span className="ml-1.5 text-white/70">Salvando...</span>
+                )}
+                {autoSaveStatus === "saved" && (
+                  <span className="ml-1.5 text-white/70">Salvo ✓</span>
+                )}
               </div>
             </div>
           </div>
@@ -242,20 +339,43 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
                 <polyline points="14 2 14 8 20 8" />
               </svg>
             </button>
+            {/* Salvar rascunho — only when not yet published */}
+            {!form.publicado && mode === "editar" && dirty && (
+              <button
+                type="button"
+                onClick={() => handleSave({ draftOnly: true })}
+                disabled={salvando || isPending}
+                className="hidden sm:inline-flex items-center justify-center h-9 px-3 text-xs text-white/90 hover:text-white transition disabled:opacity-50"
+              >
+                Salvar rascunho
+              </button>
+            )}
             <button
               type="button"
-              onClick={handleSave}
-              disabled={salvando || isPending || (!dirty && mode === "editar")}
+              onClick={() => {
+                if (form.publicado) {
+                  handleSave();
+                } else {
+                  handleSave({ publish: true });
+                }
+              }}
+              disabled={salvando || isPending || (form.publicado && !dirty && mode === "editar")}
               className="inline-flex items-center justify-center gap-1.5 h-9 px-4 md:px-5 rounded-full bg-white text-oliva text-sm font-semibold hover:bg-creme disabled:opacity-50 disabled:cursor-not-allowed transition shadow-soft"
             >
               {salvando ? (
-                "Publicando..."
+                "Salvando..."
               ) : (
                 <>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                     <path d="M5 12l5 5L20 7" />
                   </svg>
-                  {mode === "criar" ? "Publicar" : dirty ? "Publicar alterações" : "Publicado"}
+                  {mode === "criar"
+                    ? "Publicar"
+                    : !form.publicado
+                      ? "Publicar"
+                      : dirty
+                        ? "Salvar alterações"
+                        : "Publicado ✓"}
                 </>
               )}
             </button>
@@ -269,7 +389,10 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
           <OrcamentoForm mode={mode} orcamento={orcamento} config={config} />
         </div>
       ) : (
-        <OrcamentoView orcamento={virtualOrcamento} config={config} editorMode={editorMode} />
+        <>
+          <OrcamentoView orcamento={virtualOrcamento} config={config} editorMode={editorMode} />
+          <SectionNav />
+        </>
       )}
 
       {/* Mensagem de erro / actions de orçamento existente */}
@@ -326,6 +449,7 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         onClose={() => setOpenDrawer(null)}
         form={form}
         update={update}
+        onUndo={undoDrawer}
       />
       <DrawerTexto
         open={openDrawer === "sobre"}
@@ -337,12 +461,14 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         defaultValue={defaults.sobre}
         onChange={(v) => update("sobre_texto", v)}
         rows={8}
+        onUndo={undoDrawer}
       />
       <DrawerFotos
         open={openDrawer === "galeria"}
         onClose={() => setOpenDrawer(null)}
         selecionadas={form.fotos_selecionadas}
         onChange={(v) => update("fotos_selecionadas", v)}
+        onUndo={undoDrawer}
       />
       <DrawerDecoracao
         open={openDrawer === "decoracao"}
@@ -352,6 +478,7 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         itens={form.itens_decoracao}
         onChangeTexto={(v) => update("decoracao_texto", v)}
         onChangeItens={(v) => update("itens_decoracao", v)}
+        onUndo={undoDrawer}
       />
       <DrawerBuffet
         open={openDrawer === "buffet"}
@@ -359,6 +486,7 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         value={form.buffet_dados}
         defaultValue={defaults.buffet}
         onChange={(v) => update("buffet_dados", v)}
+        onUndo={undoDrawer}
       />
       <DrawerServicos
         open={openDrawer === "servicos"}
@@ -366,6 +494,7 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         value={form.servicos_opcionais_dados}
         defaultValue={defaults.servicos}
         onChange={(v) => update("servicos_opcionais_dados", v)}
+        onUndo={undoDrawer}
       />
       <DrawerItens
         open={openDrawer === "investimento"}
@@ -376,6 +505,7 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         onChangeEspaco={(v) => update("itens_espaco", v)}
         onChangeDecoracao={(v) => update("itens_decoracao", v)}
         onChangeBuffet={(v) => update("itens_buffet", v)}
+        onUndo={undoDrawer}
       />
       <DrawerTexto
         open={openDrawer === "pagamento"}
@@ -387,33 +517,21 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         defaultValue={defaults.pagamento}
         onChange={(v) => update("condicoes_pagamento", v)}
         rows={6}
+        onUndo={undoDrawer}
       />
-      <Drawer
+      <DrawerContato
         open={openDrawer === "contato"}
         onClose={() => setOpenDrawer(null)}
-        title="Contato"
-        subtitle="Os contatos são globais — edite em Configurações"
-      >
-        <div className="space-y-3 text-sm text-carvao/75">
-          <p>
-            Os contatos exibidos na seção Contato (WhatsApp, Instagram, e-mail, endereço) são <b>globais</b>:
-            valem pra todos os orçamentos.
-          </p>
-          <p>
-            Pra alterar, vá em <Link href="/admin/configuracoes" className="text-oliva hover:underline font-medium">Configurações → Contato</Link>.
-          </p>
-          <div className="mt-4 px-4 py-3 rounded-xl bg-oliva/5 border border-oliva/20 text-xs">
-            <b className="text-oliva">Dica:</b> use esta seção pra deixar a proposta com um fechamento
-            visual coerente — o cliente vê seu logo, os meios de contato e o botão grande de WhatsApp.
-          </div>
-        </div>
-      </Drawer>
+        config={config}
+        onUndo={undoDrawer}
+      />
 
       <DrawerObservacoes
         open={openObservacoes}
         onClose={() => setOpenObservacoes(false)}
         value={form.observacoes}
         onChange={(v) => update("observacoes", v)}
+        onUndo={undoDrawer}
       />
     </div>
   );

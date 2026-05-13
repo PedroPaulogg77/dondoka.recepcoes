@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase
     .from("orcamentos")
-    .insert({ ...body, slug })
+    .insert({ ...body, slug, publicado: body.publicado ?? false })
     .select("id, slug")
     .single();
 
