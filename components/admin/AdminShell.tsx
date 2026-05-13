@@ -4,6 +4,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/format";
+import { GuiaUso } from "./GuiaUso";
 
 const NAV = [
   { href: "/admin", label: "Orçamentos" },
@@ -48,9 +49,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+            <GuiaUso />
             <button
               onClick={logout}
-              className="ml-2 px-3 h-9 text-sm text-carvao/60 hover:text-carvao"
+              className="ml-1 px-3 h-9 text-sm text-carvao/60 hover:text-carvao"
             >
               Sair
             </button>

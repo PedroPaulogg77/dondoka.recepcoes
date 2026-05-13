@@ -3,102 +3,290 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
-const PASSOS = [
+/* ─── tipos ─────────────────────────────────────────────────── */
+type Item = { titulo: string; descricao: string; dica?: string };
+type Secao = { id: string; label: string; icon: React.ReactNode; itens: Item[] };
+
+/* ─── ícones inline simples ──────────────────────────────────── */
+function IconCog() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-5 h-5 shrink-0">
+      <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+    </svg>
+  );
+}
+function IconEdit() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-5 h-5 shrink-0">
+      <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
+    </svg>
+  );
+}
+function IconShare() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-5 h-5 shrink-0">
+      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" />
+    </svg>
+  );
+}
+function IconList() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-5 h-5 shrink-0">
+      <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+    </svg>
+  );
+}
+function IconQuestion() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-5 h-5 shrink-0">
+      <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
+/* ─── conteúdo do guia ───────────────────────────────────────── */
+const SECOES: Secao[] = [
   {
-    num: "1",
-    titulo: "Configure o espaço",
-    descricao:
-      "Antes de tudo, preencha as informações globais: WhatsApp, telefone, endereço, fotos do salão, texto institucional e cardápio padrão do buffet. Esses dados entram automaticamente em todas as propostas.",
-    acao: { label: "Ir para Configurações", href: "/admin/configuracoes" },
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-      </svg>
-    ),
+    id: "configurar",
+    label: "Configuração inicial",
+    icon: <IconCog />,
+    itens: [
+      {
+        titulo: "Configure o espaço antes de tudo",
+        descricao:
+          "Vá em Configurações (menu no topo) e preencha: WhatsApp, telefone, endereço, Instagram, e-mail, fotos padrão do salão, texto de apresentação e cardápio do buffet. Esses dados entram automaticamente em toda proposta nova — você só configura uma vez.",
+        dica: "Acesse: painel → Configurações",
+      },
+      {
+        titulo: "Fotos do espaço",
+        descricao:
+          "Em Configurações, role até \"Fotos padrão\" e selecione as fotos que melhor apresentam o salão. Essas são as fotos que aparecem em todas as propostas por padrão. Em cada proposta individual você pode trocar ou remover fotos sem afetar o padrão.",
+      },
+      {
+        titulo: "Cardápio do buffet",
+        descricao:
+          "Preencha o cardápio padrão em Configurações → Buffet. Você pode editar entrada, prato principal (com opções), bebidas e descrição do serviço. Cada proposta herda esse cardápio e pode ser personalizado para o cliente específico.",
+      },
+      {
+        titulo: "Serviços opcionais",
+        descricao:
+          "A lista de extras (segurança, garçons, cerimonialista etc.) também fica em Configurações. Cada item recebe um ícone automático baseado no nome. Se adicionar um serviço novo, o sistema escolhe o ícone mais adequado.",
+      },
+      {
+        titulo: "Textos padrão",
+        descricao:
+          "Escreva o texto \"Sobre o espaço\" e as \"Condições de pagamento\" uma vez em Configurações. Eles aparecem em todas as propostas. Em cada proposta você pode personalizar sem alterar o padrão global.",
+        dica: "Pagamento: escreva em 2 parágrafos separados por linha em branco — cada um vira um card diferente na proposta.",
+      },
+    ],
   },
   {
-    num: "2",
-    titulo: "Crie uma proposta",
-    descricao:
-      'Clique em "+ Novo orçamento". Você verá a proposta ao vivo como o cliente verá. Cada seção tem um lápis ✏️ no canto — toque nele para editar aquela parte.',
-    acao: { label: "Criar agora", href: "/admin/novo" },
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <path d="M12 5v14M5 12h14" />
-      </svg>
-    ),
+    id: "editor",
+    label: "Criar e editar propostas",
+    icon: <IconEdit />,
+    itens: [
+      {
+        titulo: "Criar uma nova proposta",
+        descricao:
+          "Toque em \"+ Novo orçamento\" no painel. Você verá a proposta ao vivo, exatamente como o cliente vai ver. Ela começa com os dados padrão do espaço — você personaliza para o cliente.",
+      },
+      {
+        titulo: "Editar qualquer seção",
+        descricao:
+          "Toque em qualquer parte da proposta para editar aquela seção. Uma gaveta (drawer) sobe da parte de baixo da tela com os campos certos. Ao fechar a gaveta, a alteração aparece na prévia imediatamente.",
+        dica: "Também funciona pelo botão de lápis ✏️ no canto superior direito de cada seção.",
+      },
+      {
+        titulo: "Ligar e desligar seções",
+        descricao:
+          "Cada seção tem um botão com ícone de olho 👁 no canto superior esquerdo. Toque para ocultar seções que não se aplicam ao evento — por exemplo, se o cliente não vai usar buffet, desligue essa seção. O cliente não verá o que estiver desligado.",
+        dica: "A seção fica esmaecida na prévia para você, mas sumida para o cliente.",
+      },
+      {
+        titulo: "Desfazer uma alteração",
+        descricao:
+          "Abriu a gaveta e mudou algo mas se arrependeu? Toque em \"Desfazer\" no rodapé da gaveta. Isso restaura exatamente como estava antes de você abrir aquela gaveta.",
+      },
+      {
+        titulo: "Dados do cliente",
+        descricao:
+          "Toque na seção de Capa ou nos Dados do evento para preencher: nome, tipo de evento (casamento, aniversário…), data, horário e número de convidados. O nome do cliente aparece no título da proposta.",
+      },
+      {
+        titulo: "Valores e investimento",
+        descricao:
+          "Toque na seção \"Resumo da proposta\" (Investimento) para adicionar itens com quantidade e valor unitário, separados por Espaço, Decoração e Buffet. O total é calculado automaticamente e exibido com animação para o cliente.",
+      },
+      {
+        titulo: "Contatos na proposta",
+        descricao:
+          "Toque na seção de Contato para editar diretamente WhatsApp, telefone, Instagram, e-mail e endereço. Atenção: esses dados são globais — alterar aqui atualiza em todos os orçamentos.",
+      },
+      {
+        titulo: "Observações internas",
+        descricao:
+          "O ícone de documento 📄 no cabeçalho do editor abre um espaço para notas internas — anotações suas sobre o cliente, negociações, detalhes do evento. O cliente nunca vê essas observações.",
+      },
+      {
+        titulo: "Duplicar uma proposta",
+        descricao:
+          "No rodapé do editor, toque em \"Duplicar orçamento\" para criar uma cópia. Ideal para propostas similares — edite apenas o que muda para o novo cliente.",
+      },
+    ],
   },
   {
-    num: "3",
-    titulo: "Personalize para o cliente",
-    descricao:
-      "Toque em qualquer seção da proposta para editar: nome do cliente, data do evento, fotos, decoração, cardápio, valores e condições de pagamento. Cada alteração aparece ao vivo na prévia.",
-    acao: null,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <path d="M12 20h9" />
-        <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
-      </svg>
-    ),
+    id: "publicar",
+    label: "Publicar e compartilhar",
+    icon: <IconShare />,
+    itens: [
+      {
+        titulo: "Rascunho vs Publicado",
+        descricao:
+          "Enquanto a proposta não for publicada, o link existe mas o cliente vê apenas \"Proposta em preparação\" — nada do conteúdo. Somente ao tocar em \"Publicar\" a proposta fica visível. Você pode editar à vontade antes disso sem preocupação.",
+        dica: "O indicador no cabeçalho mostra: \"Rascunho — não publicado\" ou \"Publicado ✓\".",
+      },
+      {
+        titulo: "Publicar a proposta",
+        descricao:
+          "Quando estiver pronta, toque em \"Publicar\" no cabeçalho verde do editor. A proposta fica disponível no link exclusivo do cliente. Depois de publicada, qualquer edição salva atualiza a proposta em tempo real — o link continua o mesmo.",
+      },
+      {
+        titulo: "Auto-save (salvo automático)",
+        descricao:
+          "Depois de publicada, a proposta é salva automaticamente 4 segundos após cada alteração. Você verá \"Salvando...\" e depois \"Salvo ✓\" no cabeçalho. Não precisa tocar em nenhum botão para não perder as mudanças.",
+      },
+      {
+        titulo: "Salvar como rascunho",
+        descricao:
+          "Se quiser salvar sem publicar (guardar o progresso sem deixar o cliente ver), toque em \"Salvar rascunho\" — botão discreto ao lado de \"Publicar\", visível enquanto a proposta ainda não estiver publicada.",
+      },
+      {
+        titulo: "Copiar mensagem para WhatsApp",
+        descricao:
+          "No rodapé do editor, toque em \"Copiar mensagem WhatsApp\". Uma mensagem pronta é copiada com o link da proposta e o nome do cliente. Cole direto na conversa do WhatsApp. O status muda automaticamente para \"Enviado\".",
+        dica: "A mensagem já vem formatada: \"Olá, [Nome]! Preparei sua proposta personalizada…\"",
+      },
+      {
+        titulo: "Copiar só o link",
+        descricao:
+          "Toque em \"Copiar link\" no cabeçalho do editor para copiar só o link da proposta, sem a mensagem. Útil para colar em outros canais ou salvar para si.",
+      },
+      {
+        titulo: "Ver como o cliente vai ver",
+        descricao:
+          "Toque em \"Ver como cliente\" no cabeçalho para abrir o link público em uma nova aba. Você vê exatamente o que o cliente vai ver — sem os botões de edição.",
+      },
+      {
+        titulo: "O cliente salva o PDF",
+        descricao:
+          "O cliente abre o link no celular ou computador e toca em \"Salvar PDF\" no canto inferior da tela. Na tela que aparecer, deve selecionar \"Salvar como PDF\" no lugar de uma impressora. O arquivo fica salvo no celular ou computador.",
+        dica: "No iPhone: toque em \"Salvar PDF\" → Imprimir → aperte e segure a prévia do PDF que aparece → Compartilhar → Salvar em Arquivos.",
+      },
+    ],
   },
   {
-    num: "4",
-    titulo: "Ligue e desligue seções",
-    descricao:
-      'Cada seção tem um chip no canto superior esquerdo com um ícone de olho 👁. Toque para ocultar seções que não se aplicam ao evento — por exemplo, se o cliente não vai usar o buffet. O cliente não verá o que estiver desligado.',
-    acao: null,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-        <circle cx="12" cy="12" r="3" />
-      </svg>
-    ),
+    id: "gerenciar",
+    label: "Gerenciar propostas",
+    icon: <IconList />,
+    itens: [
+      {
+        titulo: "Painel de orçamentos",
+        descricao:
+          "Na página inicial do admin você vê todas as propostas com nome do cliente, tipo de evento, data, status e valor total. Toque em qualquer uma para editar.",
+      },
+      {
+        titulo: "Buscar e filtrar",
+        descricao:
+          "Use o campo de busca para encontrar pelo nome do cliente ou tipo de evento. Use as abas (Todos / Rascunho / Enviado / Aceito / Recusado) para filtrar por etapa do negócio.",
+      },
+      {
+        titulo: "Status das propostas",
+        descricao:
+          "O status é uma marcação interna sua — não aparece para o cliente. Use para controlar o fluxo: Rascunho (ainda preparando) → Enviado (link já foi para o cliente) → Aceito ou Recusado. O status muda automaticamente para Enviado quando você copia o link ou a mensagem.",
+      },
+      {
+        titulo: "Excluir uma proposta",
+        descricao:
+          "No rodapé do editor, toque em \"Excluir\". Isso remove permanentemente a proposta e o link deixa de funcionar. Use com cuidado — não tem como desfazer.",
+      },
+    ],
   },
   {
-    num: "5",
-    titulo: "Publique e compartilhe",
-    descricao:
-      'Quando estiver pronto, toque em "Publicar" no topo. A proposta fica disponível em um link exclusivo. Toque em "Copiar mensagem WhatsApp" para copiar a mensagem pronta e colar direto para o cliente.',
-    acao: null,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347" />
-      </svg>
-    ),
-  },
-  {
-    num: "6",
-    titulo: "Salve como PDF",
-    descricao:
-      'O cliente pode abrir o link e tocar em "Salvar PDF". Na tela que aparecer, ele deve selecionar "Salvar como PDF" no lugar de uma impressora. O arquivo fica salvo no celular ou computador.',
-    acao: null,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-      </svg>
-    ),
+    id: "duvidas",
+    label: "Dúvidas frequentes",
+    icon: <IconQuestion />,
+    itens: [
+      {
+        titulo: "Posso editar a proposta depois de enviar para o cliente?",
+        descricao:
+          "Sim. O link continua o mesmo e qualquer edição é salva automaticamente. Se o cliente abrir o link depois da sua edição, já verá a versão atualizada.",
+      },
+      {
+        titulo: "O cliente pode ver a proposta antes de eu publicar?",
+        descricao:
+          "Não. Enquanto não estiver publicada, o cliente que acessar o link vê apenas uma tela de \"Proposta em preparação\" — sem nenhum conteúdo. Você controla quando ela fica visível.",
+      },
+      {
+        titulo: "Como adicionar novas fotos ao acervo?",
+        descricao:
+          "Dentro de uma proposta, toque na seção Galeria → gaveta de fotos → botão de upload. As fotos enviadas ficam disponíveis em todos os orçamentos.",
+      },
+      {
+        titulo: "E se eu mudar o cardápio padrão em Configurações?",
+        descricao:
+          "Propostas que já estão com o cardápio padrão são atualizadas. Propostas que tiveram o cardápio personalizado mantêm a versão personalizada — a mudança global não sobrescreve customizações individuais.",
+      },
+      {
+        titulo: "Como trocar os contatos (WhatsApp, endereço)?",
+        descricao:
+          "Dois caminhos: (1) vá em Configurações → Contato e edite lá. Ou (2) dentro de qualquer proposta, toque na seção de Contato e edite diretamente no drawer. Os contatos são globais — mudar em um lugar muda em todos.",
+      },
+      {
+        titulo: "Posso ter propostas para eventos diferentes com cardápios diferentes?",
+        descricao:
+          "Sim. Em cada proposta, toque na seção Buffet e edite o cardápio especificamente para aquele cliente. Isso não afeta o cardápio padrão nem as outras propostas.",
+      },
+      {
+        titulo: "A proposta funciona no celular do cliente?",
+        descricao:
+          "Sim, a proposta é totalmente adaptada para celular. O cliente pode rolar a página, ver as fotos, e usar o botão de WhatsApp para entrar em contato diretamente com você.",
+      },
+      {
+        titulo: "Esqueci a senha — como entro?",
+        descricao:
+          "Na tela de login, use a opção \"Esqueci minha senha\" para receber um link de redefinição no e-mail cadastrado.",
+      },
+    ],
   },
 ];
 
+/* ─── componente principal ───────────────────────────────────── */
 export function GuiaUso() {
   const [open, setOpen] = useState(false);
+  const [secaoAberta, setSecaoAberta] = useState<string>("configurar");
+
+  const secaoAtual = SECOES.find((s) => s.id === secaoAberta) ?? SECOES[0];
 
   return (
     <>
+      {/* Botão no header */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 h-10 px-4 rounded-full border border-areia text-carvao/70 text-sm hover:border-oliva/40 hover:text-oliva transition"
+        className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-sm text-carvao/65 hover:bg-areia/40 hover:text-carvao transition"
+        title="Como usar o sistema"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
           <circle cx="12" cy="12" r="10" />
           <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
-          <path d="M12 17h.01" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
-        Como usar
+        <span className="hidden sm:inline">Ajuda</span>
       </button>
 
+      {/* Modal */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -119,24 +307,24 @@ export function GuiaUso() {
             <motion.div
               role="dialog"
               aria-modal="true"
-              aria-label="Como usar o Dondoka"
-              className="relative w-full md:max-w-xl md:rounded-2xl rounded-t-3xl bg-creme shadow-premium flex flex-col"
-              style={{ maxHeight: "90dvh" }}
+              aria-label="Guia de uso"
+              className="relative w-full md:max-w-2xl md:rounded-2xl rounded-t-3xl bg-creme shadow-premium flex flex-col overflow-hidden"
+              style={{ maxHeight: "92dvh" }}
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 280 }}
             >
               {/* Pull bar */}
-              <div className="pt-2.5 pb-1 md:hidden flex justify-center">
+              <div className="pt-2.5 pb-0 md:hidden flex justify-center shrink-0">
                 <span className="block w-10 h-1 rounded-full bg-areia" aria-hidden />
               </div>
 
               {/* Header */}
-              <header className="px-5 md:px-7 pt-3 pb-4 border-b border-areia/60 flex items-center justify-between gap-4">
+              <header className="px-5 md:px-7 pt-3 pb-3 border-b border-areia/60 flex items-center justify-between gap-4 shrink-0">
                 <div>
-                  <h2 className="font-serif text-xl text-carvao">Como usar o Dondoka</h2>
-                  <p className="text-xs text-carvao/50 mt-0.5">Siga estes passos e crie sua primeira proposta em minutos</p>
+                  <h2 className="font-serif text-xl text-carvao">Guia de uso</h2>
+                  <p className="text-xs text-carvao/50 mt-0.5">Tudo que você precisa saber para criar propostas</p>
                 </div>
                 <button
                   type="button"
@@ -150,64 +338,99 @@ export function GuiaUso() {
                 </button>
               </header>
 
-              {/* Body */}
-              <div className="flex-1 overflow-y-auto px-5 md:px-7 py-5 md:py-6 space-y-4">
-                {PASSOS.map((passo, idx) => (
-                  <div
-                    key={passo.num}
-                    className="flex gap-4"
-                  >
-                    {/* Número + linha conectora */}
-                    <div className="flex flex-col items-center shrink-0">
-                      <div className="w-9 h-9 rounded-full bg-oliva text-white flex items-center justify-center shrink-0">
-                        {passo.icon}
-                      </div>
-                      {idx < PASSOS.length - 1 && (
-                        <div className="w-px flex-1 bg-areia/60 mt-1.5 mb-0 min-h-[20px]" />
-                      )}
-                    </div>
+              {/* Layout: tabs + conteúdo */}
+              <div className="flex flex-1 min-h-0">
 
-                    {/* Conteúdo */}
-                    <div className="pb-4 min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-semibold tracking-widest text-bronze uppercase">
-                          Passo {passo.num}
-                        </span>
-                      </div>
-                      <h3 className="font-serif text-base text-carvao mt-0.5 leading-snug">
-                        {passo.titulo}
-                      </h3>
-                      <p className="text-sm text-carvao/65 mt-1.5 leading-relaxed">
-                        {passo.descricao}
-                      </p>
-                      {passo.acao && (
+                {/* Sidebar de seções — horizontal em mobile, vertical em desktop */}
+                <nav className="shrink-0 border-r border-areia/60 hidden md:flex flex-col py-3 w-52">
+                  {SECOES.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSecaoAberta(s.id)}
+                      className={`flex items-center gap-2.5 px-4 py-2.5 text-sm text-left transition ${
+                        secaoAberta === s.id
+                          ? "bg-oliva/10 text-oliva font-medium border-r-2 border-oliva"
+                          : "text-carvao/65 hover:bg-areia/30 hover:text-carvao"
+                      }`}
+                    >
+                      {s.icon}
+                      {s.label}
+                    </button>
+                  ))}
+                </nav>
+
+                {/* Tabs horizontais em mobile */}
+                <div className="flex flex-col flex-1 min-h-0 min-w-0">
+                  <div className="md:hidden flex gap-1.5 overflow-x-auto px-4 py-2.5 border-b border-areia/60 shrink-0 scrollbar-hide">
+                    {SECOES.map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setSecaoAberta(s.id)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap shrink-0 transition ${
+                          secaoAberta === s.id
+                            ? "bg-oliva text-white"
+                            : "bg-areia/40 text-carvao/65 hover:bg-areia/70"
+                        }`}
+                      >
+                        {s.icon}
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Conteúdo da seção selecionada */}
+                  <div className="flex-1 overflow-y-auto px-5 md:px-6 py-4 space-y-1">
+                    <h3 className="font-serif text-lg text-carvao mb-4">{secaoAtual.label}</h3>
+                    {secaoAtual.itens.map((item, i) => (
+                      <Accordion key={i} titulo={item.titulo} descricao={item.descricao} dica={item.dica} />
+                    ))}
+
+                    {/* Link para configurações na seção de config */}
+                    {secaoAtual.id === "configurar" && (
+                      <div className="pt-3">
                         <Link
-                          href={passo.acao.href}
+                          href="/admin/configuracoes"
                           onClick={() => setOpen(false)}
-                          className="mt-3 inline-flex items-center gap-1.5 text-sm text-oliva font-medium hover:text-bronze transition"
+                          className="inline-flex items-center gap-2 text-sm text-oliva font-medium hover:text-bronze transition"
                         >
-                          {passo.acao.label}
+                          Ir para Configurações
                           <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
                             <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
                           </svg>
                         </Link>
-                      )}
-                    </div>
+                      </div>
+                    )}
+                    {secaoAtual.id === "editor" && (
+                      <div className="pt-3">
+                        <Link
+                          href="/admin/novo"
+                          onClick={() => setOpen(false)}
+                          className="inline-flex items-center gap-2 text-sm text-oliva font-medium hover:text-bronze transition"
+                        >
+                          Criar novo orçamento
+                          <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                            <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                          </svg>
+                        </Link>
+                      </div>
+                    )}
                   </div>
-                ))}
+                </div>
               </div>
 
               {/* Footer */}
               <footer
-                className="px-5 md:px-7 py-3 md:py-4 border-t border-areia/60 bg-creme/80 backdrop-blur flex justify-end"
+                className="px-5 md:px-7 py-3 border-t border-areia/60 bg-creme/80 backdrop-blur flex justify-end shrink-0"
                 style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
               >
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center h-11 px-6 rounded-full bg-oliva text-white font-medium text-sm hover:bg-oliva/90 transition"
+                  className="inline-flex items-center justify-center h-10 px-6 rounded-full bg-oliva text-white font-medium text-sm hover:bg-oliva/90 transition"
                 >
-                  Entendido!
+                  Fechar
                 </button>
               </footer>
             </motion.div>
@@ -215,5 +438,47 @@ export function GuiaUso() {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+/* ─── accordion de item ──────────────────────────────────────── */
+function Accordion({ titulo, descricao, dica }: { titulo: string; descricao: string; dica?: string }) {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <div className="border-b border-areia/50 last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setAberto((v) => !v)}
+        className="w-full py-3 flex items-start justify-between gap-3 text-left hover:text-oliva transition group"
+      >
+        <span className="text-sm font-medium text-carvao group-hover:text-oliva leading-snug">{titulo}</span>
+        <span className={`text-carvao/40 transition-transform shrink-0 mt-0.5 ${aberto ? "rotate-180" : ""}`}>
+          <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+          </svg>
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {aberto && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="pb-4 space-y-2">
+              <p className="text-sm text-carvao/70 leading-relaxed">{descricao}</p>
+              {dica && (
+                <div className="flex gap-2 bg-oliva/8 rounded-xl px-3 py-2.5">
+                  <span className="text-oliva text-xs mt-0.5 shrink-0">💡</span>
+                  <p className="text-xs text-carvao/65 leading-relaxed">{dica}</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
