@@ -183,13 +183,87 @@ export const IconCoins = (p?: IconProps) => base(
   p
 );
 
+// ===== Ícones extras pra serviços comuns em eventos =====
+export const IconCamera = (p?: IconProps) => base(
+  <>
+    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+    <circle cx="12" cy="13" r="4" />
+  </>,
+  p
+);
+
+export const IconHeadphones = (p?: IconProps) => base(
+  <>
+    <path d="M3 18v-6a9 9 0 0118 0v6" />
+    <path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z" />
+  </>,
+  p
+);
+
+export const IconCar = (p?: IconProps) => base(
+  <>
+    <path d="M5 17h14M3 17l1.5-7a2 2 0 012-1.5h11a2 2 0 012 1.5L21 17" />
+    <circle cx="7" cy="17" r="2" />
+    <circle cx="17" cy="17" r="2" />
+  </>,
+  p
+);
+
+export const IconBouquet = (p?: IconProps) => base(
+  <>
+    <circle cx="12" cy="6" r="2.5" />
+    <circle cx="7" cy="9" r="2.5" />
+    <circle cx="17" cy="9" r="2.5" />
+    <path d="M12 11v10M9 21h6" />
+  </>,
+  p
+);
+
+export const IconCake = (p?: IconProps) => base(
+  <>
+    <path d="M3 21h18M4 21v-8a2 2 0 012-2h12a2 2 0 012 2v8M4 15h16M9 7a2 2 0 100-4 2 2 0 000 4M9 7v4M15 7a2 2 0 100-4 2 2 0 000 4M15 7v4" />
+  </>,
+  p
+);
+
+export const IconSparkle = (p?: IconProps) => base(
+  <>
+    <path d="M12 3l1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7zM19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7zM5 4l.5 1.5L7 6l-1.5.5L5 8l-.5-1.5L3 6l1.5-.5z" />
+  </>,
+  p
+);
+
+export const IconStar = (p?: IconProps) => base(
+  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />,
+  p
+);
+
+export const IconHeart = (p?: IconProps) => base(
+  <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
+  p
+);
+
 // ===== Mapeamento por nome (Serviços Opcionais) =====
+// O sistema procura por palavras-chave no nome do serviço (case-insensitive)
+// e atribui automaticamente o ícone correspondente.
+export const SERVICOS_KEYWORDS = [
+  { keywords: ["seguran"], iconName: "Segurança" as const, icon: IconShield },
+  { keywords: ["recepc", "cerimon"], iconName: "Recepcionista/Cerimonialista" as const, icon: IconUserTie },
+  { keywords: ["limpez"], iconName: "Limpeza" as const, icon: IconBroom },
+  { keywords: ["garç", "garc"], iconName: "Garçom" as const, icon: IconTray },
+  { keywords: ["músic", "music", "banda", "dj"], iconName: "Música/DJ" as const, icon: IconHeadphones },
+  { keywords: ["foto", "video"], iconName: "Fotografia" as const, icon: IconCamera },
+  { keywords: ["microfone", "som", "locução"], iconName: "Som" as const, icon: IconMicrophone },
+  { keywords: ["valet", "carro", "manobr", "transport"], iconName: "Manobrista" as const, icon: IconCar },
+  { keywords: ["flor", "decora", "buquê", "buque"], iconName: "Flores/Decoração" as const, icon: IconBouquet },
+  { keywords: ["bolo", "doce", "confeit"], iconName: "Bolo/Doces" as const, icon: IconCake },
+  { keywords: ["fogo", "pirotec", "efeito"], iconName: "Efeitos especiais" as const, icon: IconSparkle },
+];
+
 export function iconForServico(nome: string): (p?: IconProps) => ReactNode {
   const n = nome.toLowerCase();
-  if (n.includes("seguran")) return IconShield;
-  if (n.includes("recepc") || n.includes("cerimon")) return IconUserTie;
-  if (n.includes("limpez")) return IconBroom;
-  if (n.includes("garç") || n.includes("garc")) return IconTray;
-  if (n.includes("músic") || n.includes("music")) return IconMicrophone;
-  return IconTray;
+  for (const entry of SERVICOS_KEYWORDS) {
+    if (entry.keywords.some((k) => n.includes(k))) return entry.icon;
+  }
+  return IconStar;
 }

@@ -1,6 +1,7 @@
 "use client";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
+import { TextoFormatado } from "./TextoFormatado";
 import type { ItemOrcamento } from "@/types/orcamento";
 
 type Props = {
@@ -16,9 +17,10 @@ export function Decoracao({ texto, itens }: Props) {
 
         {texto && (
           <Reveal delay={0.1}>
-            <p className="mt-10 max-w-2xl mx-auto text-center text-carvao/75 whitespace-pre-line">
-              {texto}
-            </p>
+            <TextoFormatado
+              texto={texto}
+              className="mt-10 max-w-2xl mx-auto text-center text-carvao/75 space-y-2"
+            />
           </Reveal>
         )}
 

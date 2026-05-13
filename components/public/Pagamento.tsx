@@ -1,6 +1,7 @@
 "use client";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
+import { TextoFormatado } from "./TextoFormatado";
 import { IconCard, IconCalendar } from "@/components/ui/Icons";
 
 type Topico = { titulo: string; corpo: string; icon: "card" | "calendar" };
@@ -53,9 +54,10 @@ export function Pagamento({ texto }: { texto: string | null }) {
                   </span>
                   <div className="flex-1 border-l-2 border-oliva/40 pl-5 pb-1">
                     <h3 className="font-serif text-lg text-carvao">{t.titulo}</h3>
-                    <p className="mt-2 text-carvao/75 leading-relaxed text-sm md:text-base whitespace-pre-line">
-                      {t.corpo}
-                    </p>
+                    <TextoFormatado
+                      texto={t.corpo}
+                      className="mt-2 text-carvao/75 leading-relaxed text-sm md:text-base space-y-1.5"
+                    />
                   </div>
                 </div>
               </Reveal>

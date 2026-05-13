@@ -1,6 +1,7 @@
 "use client";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
+import { TextoFormatado } from "./TextoFormatado";
 import { IconCapacidade, IconClimatizado, IconBanheiros, IconCozinha, IconKids } from "@/components/ui/Icons";
 
 const FEATURES = [
@@ -19,9 +20,10 @@ export function SobreEspaco({ texto }: { texto: string | null }) {
 
         {texto && (
           <Reveal delay={0.1}>
-            <p className="mt-10 max-w-2xl mx-auto text-center text-carvao/75 whitespace-pre-line">
-              {texto.split("\n").slice(0, 1).join("")}
-            </p>
+            <TextoFormatado
+              texto={texto}
+              className="mt-10 max-w-2xl mx-auto text-center text-carvao/75 space-y-2"
+            />
           </Reveal>
         )}
 

@@ -1,4 +1,5 @@
 "use client";
+import { iconForServico, SERVICOS_KEYWORDS } from "@/components/ui/Icons";
 import type { ServicosOpcionaisDados } from "@/types/orcamento";
 
 type Props = {
@@ -81,21 +82,51 @@ export function ServicosEditor({ value, onChange, isCustom, onResetDefault }: Pr
       </label>
 
       <section className="bg-white border border-areia/50 rounded-xl p-4 md:p-5 space-y-3">
-        <span className="eyebrow text-bronze block">Lista de serviços</span>
-        {value.lista.map((s, i) => (
-          <div key={i} className="flex gap-2 items-center">
-            <input
-              type="text"
-              value={s}
-              onChange={(e) => updateItem(i, e.target.value)}
-              className="form-input flex-1"
-              placeholder="Nome do serviço"
-            />
-            <button type="button" onClick={() => removeItem(i)} className={IconBtn} aria-label="Remover">
-              <TrashIcon />
-            </button>
-          </div>
-        ))}
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="eyebrow text-bronze block">Lista de serviços</span>
+          <details className="text-[11px] text-oliva">
+            <summary className="cursor-pointer hover:underline">Quais ícones existem?</summary>
+            <div className="mt-2 -mx-1 p-3 rounded-xl bg-creme/70 border border-areia/50 text-carvao/70 leading-relaxed">
+              O sistema detecta o ícone automaticamente pelo nome. Use palavras-chave como:
+              <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
+                {SERVICOS_KEYWORDS.map((k) => {
+                  const Icon = k.icon;
+                  return (
+                    <li key={k.iconName} className="flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-oliva/10 text-oliva inline-flex items-center justify-center shrink-0">
+                        <Icon className="w-3 h-3" />
+                      </span>
+                      <span className="truncate">{k.keywords[0]}…</span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="mt-2 text-[10px] text-carvao/55">
+                Não reconhecido vira ⭐ estrela genérica.
+              </p>
+            </div>
+          </details>
+        </div>
+        {value.lista.map((s, i) => {
+          const Icon = iconForServico(s);
+          return (
+            <div key={i} className="flex gap-2 items-center">
+              <span className="w-10 h-10 rounded-full bg-oliva/10 text-oliva inline-flex items-center justify-center shrink-0" aria-hidden>
+                <Icon className="w-4 h-4" />
+              </span>
+              <input
+                type="text"
+                value={s}
+                onChange={(e) => updateItem(i, e.target.value)}
+                className="form-input flex-1"
+                placeholder="Nome do serviço"
+              />
+              <button type="button" onClick={() => removeItem(i)} className={IconBtn} aria-label="Remover">
+                <TrashIcon />
+              </button>
+            </div>
+          );
+        })}
         <button type="button" onClick={addItem} className={PillBtn}>
           <PlusIcon /> Adicionar serviço
         </button>
