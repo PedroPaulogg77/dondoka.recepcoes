@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
 import { brl } from "@/lib/format";
@@ -15,36 +15,70 @@ function subtotal(itens: ItemOrcamento[]) {
   return itens.reduce((acc, i) => acc + (i.qtd || 0) * (i.valor_unitario || 0), 0);
 }
 
-function CategoryBlock({ categoria }: { categoria: Categoria }) {
+function CategoryRow({ categoria }: { categoria: Categoria }) {
+  const [open, setOpen] = useState(false);
   if (!categoria.itens.length) return null;
   const total = subtotal(categoria.itens);
+
   return (
     <Reveal>
-      <div>
-        <div className="flex justify-between items-baseline px-1 pb-3 border-b border-areia/60">
-          <h3 className="font-serif text-lg md:text-xl text-carvao">{categoria.titulo}</h3>
-          <span className="font-serif text-bronze tabular-nums">{brl(total)}</span>
-        </div>
-        <ul>
-          {categoria.itens.map((item) => (
-            <li
-              key={item.id}
-              className="px-1 py-4 flex justify-between items-baseline gap-4 border-b border-areia/40 last:border-b-0"
+      <div className="border-b border-areia/60">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="w-full py-5 px-1 flex justify-between items-baseline gap-4 hover:bg-areia/10 transition rounded-md group"
+        >
+          <span className="flex items-center gap-3">
+            <span
+              className={`text-oliva transition-transform ${open ? "rotate-90" : ""}`}
+              aria-hidden
             >
-              <div className="flex-1 min-w-0">
-                <p className="text-carvao/85">{item.descricao}</p>
-                {item.qtd > 1 && (
-                  <p className="text-xs text-carvao/50 mt-0.5">
-                    {item.qtd} × {brl(item.valor_unitario)}
-                  </p>
-                )}
+              ▸
+            </span>
+            <span className="font-serif text-lg md:text-xl text-carvao text-left">
+              {categoria.titulo}
+            </span>
+            <span className="text-xs text-carvao/45 hidden md:inline">
+              {categoria.itens.length} {categoria.itens.length === 1 ? "item" : "itens"}
+            </span>
+          </span>
+          <span className="font-serif text-bronze tabular-nums whitespace-nowrap">
+            {brl(total)}
+          </span>
+        </button>
+
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.ul
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="pb-4 pl-7 md:pl-9 pr-1 space-y-2">
+                {categoria.itens.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex justify-between items-baseline gap-4 py-1.5 border-b border-areia/30 last:border-b-0"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-carvao/85">{item.descricao}</p>
+                      {item.qtd > 1 && (
+                        <p className="text-[11px] text-carvao/50 mt-0.5">
+                          {item.qtd} × {brl(item.valor_unitario)}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-sm font-medium text-carvao tabular-nums whitespace-nowrap">
+                      {brl(item.qtd * item.valor_unitario)}
+                    </span>
+                  </li>
+                ))}
               </div>
-              <span className="font-medium text-carvao tabular-nums whitespace-nowrap">
-                {brl(item.qtd * item.valor_unitario)}
-              </span>
-            </li>
-          ))}
-        </ul>
+            </motion.ul>
+          )}
+        </AnimatePresence>
       </div>
     </Reveal>
   );
@@ -92,22 +126,26 @@ export function Investimento({
 
   return (
     <section id="investimento" className="py-20 md:py-28 px-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <SectionTitle eyebrow="Investimento" title="Resumo da proposta" />
 
-        <div className="mt-12 space-y-12">
-          <CategoryBlock categoria={{ titulo: "Espaço", itens: espaco }} />
-          <CategoryBlock categoria={{ titulo: "Decoração", itens: decoracao }} />
-          <CategoryBlock categoria={{ titulo: "Buffet", itens: buffet }} />
+        <p className="mt-6 text-center text-sm text-carvao/55 max-w-md mx-auto">
+          Toque em cada categoria para ver os itens inclusos.
+        </p>
+
+        <div className="mt-10 border-t border-areia/60">
+          <CategoryRow categoria={{ titulo: "Espaço", itens: espaco }} />
+          <CategoryRow categoria={{ titulo: "Decoração", itens: decoracao }} />
+          <CategoryRow categoria={{ titulo: "Buffet", itens: buffet }} />
         </div>
 
         <Reveal>
-          <div className="mt-12 relative overflow-hidden rounded-2xl bg-oliva text-white p-8 md:p-12 shadow-premium">
+          <div className="mt-12 relative overflow-hidden rounded-2xl bg-oliva p-8 md:p-12 shadow-premium">
             <div className="absolute inset-0 pattern-claro opacity-10" aria-hidden />
             <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div>
-                <div className="eyebrow text-white/70">Valor total</div>
-                <p className="mt-2 text-white/75 text-sm max-w-xs">
+                <div className="eyebrow text-white/80">Valor total</div>
+                <p className="mt-2 text-white/90 text-sm max-w-xs">
                   Investimento completo para sua celebração no espaço Dondoka.
                 </p>
               </div>
@@ -122,6 +160,17 @@ export function Investimento({
             </div>
           </div>
         </Reveal>
+
+        {/* Versão print: mostra tudo aberto */}
+        <style jsx global>{`
+          @media print {
+            #investimento ul {
+              height: auto !important;
+              opacity: 1 !important;
+              display: block !important;
+            }
+          }
+        `}</style>
       </div>
     </section>
   );

@@ -20,10 +20,12 @@ export function Hero({ orcamento }: { orcamento: Orcamento }) {
           <Image
             src="/logos/logo-1.png"
             alt="Dondoka Recepções"
-            width={260}
-            height={260}
+            width={2381}
+            height={676}
             priority
-            className="mx-auto h-24 sm:h-32 md:h-44 w-auto max-w-[75vw] object-contain"
+            quality={95}
+            sizes="(max-width: 640px) 80vw, (max-width: 768px) 480px, 640px"
+            className="mx-auto h-24 sm:h-32 md:h-44 w-auto max-w-[80vw] object-contain"
           />
         </motion.div>
 

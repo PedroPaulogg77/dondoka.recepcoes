@@ -8,6 +8,7 @@ import { FotosPicker } from "./FotosPicker";
 import { EditableTextField } from "./EditableTextField";
 import { BuffetEditor } from "./BuffetEditor";
 import { ServicosEditor } from "./ServicosEditor";
+import { SectionHelp } from "./SectionHelp";
 import { brl } from "@/lib/format";
 import {
   SECOES_DEFAULT,
@@ -209,7 +210,15 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
 
       {/* Status + Dados do cliente */}
       <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="flex items-baseline justify-between gap-3 mb-1">
+          <h2 className="font-serif text-xl text-carvao">Dados do cliente</h2>
+        </div>
+        <SectionHelp title="Para que servem estes campos?">
+          <p>São os dados que aparecem no topo da proposta personalizada (seção <b>Dados do evento</b>) e identificam o orçamento internamente.</p>
+          <p><b>Cliente</b> é o único obrigatório — vira o título "Para [primeiro nome]" no hero da proposta.</p>
+          <p><b>Status</b> é uso interno: rascunho → enviado → aceito/recusado. Não aparece pro cliente.</p>
+        </SectionHelp>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
           <Field label="Cliente" required>
             <input
               type="text"
@@ -276,6 +285,11 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
         <p className="text-sm text-carvao/55 mt-1">
           Marque o que deve aparecer para este cliente. Tudo que estiver desligado some do link público e do PDF.
         </p>
+        <SectionHelp title="Quando desligar uma seção?">
+          <p><b>Buffet</b> e <b>Serviços opcionais</b> ficam desligados por padrão — ligue apenas quando o cliente pediu cardápio ou serviços extras.</p>
+          <p>Se o cliente já tem decoradora própria, desligue <b>Decoração</b>. Se já tem buffet contratado fora, desligue <b>Buffet</b>.</p>
+          <p>O cliente só vê o que está ligado. Você pode ligar/desligar e salvar quantas vezes quiser — o link público atualiza imediatamente.</p>
+        </SectionHelp>
         <div className="mt-5 grid grid-cols-2 md:grid-cols-3 gap-2">
           {SECOES_LABEL.map(([key, label]) => {
             const checked = form.secoes_visiveis[key];
@@ -305,8 +319,13 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
 
       {/* Itens — Espaço, Decoração, Buffet (valores financeiros) */}
       <section>
-        <h2 className="font-serif text-xl text-carvao mb-4">Itens do orçamento</h2>
-        <div className="space-y-4">
+        <h2 className="font-serif text-xl text-carvao">Itens do orçamento</h2>
+        <SectionHelp title="Como funcionam os valores?">
+          <p>Cada item tem <b>descrição</b>, <b>quantidade</b> e <b>valor unitário</b>. O sistema calcula o subtotal automaticamente (qtd × valor) e soma todas as 3 categorias no total geral.</p>
+          <p>Itens com quantidade 1 mostram só o valor. Itens com quantidade {">"} 1 mostram "5 × R$ 120" como detalhe pro cliente.</p>
+          <p>Os 3 grupos (Espaço, Decoração, Buffet) aparecem na seção <b>Resumo da proposta</b> da página pública, agora colapsáveis — o cliente clica pra ver os itens.</p>
+        </SectionHelp>
+        <div className="space-y-4 mt-4">
           <ItensEditor
             titulo="Espaço"
             itens={form.itens_espaco}
@@ -336,6 +355,11 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
           <p className="text-sm text-carvao/55 mt-1">
             Os textos abaixo já vêm pré-preenchidos com o padrão da Dondoka. Edite à vontade — o badge mostra se você customizou ou está usando o padrão.
           </p>
+          <SectionHelp title="Como funcionam o 'Padrão' e o 'Customizado'?">
+            <p>Os textos padrão vêm da aba <b>Configurações</b>. Se você editar aqui, vira <b>Customizado</b> só para este orçamento — não afeta os outros.</p>
+            <p>Clicando em <b>↺ Voltar ao padrão</b> o texto volta a ser sincronizado: se você atualizar o padrão em Configurações depois, este orçamento herda a nova versão.</p>
+            <p>Use customização quando o cliente tem alguma condição especial (ex: parcelamento diferente).</p>
+          </SectionHelp>
         </div>
         <EditableTextField
           label="Sobre o espaço"
@@ -369,6 +393,11 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
             isCustom={!deepEqual(form.buffet_dados, defaultBuffet)}
             onResetDefault={() => up("buffet_dados", defaultBuffet)}
           />
+          <SectionHelp title="Como editar o cardápio">
+            <p>O cardápio vira a seção <b>Buffet</b> na proposta pública. Aparece com Entrada, Prato Principal (com opções), Bebidas e o texto descritivo do Serviço.</p>
+            <p>Edite títulos e itens diretamente — use o <b>×</b> ao lado de cada linha pra remover. Botão <b>+ Adicionar</b> cria novo item.</p>
+            <p>Se mudou de ideia, <b>↺ Voltar ao padrão</b> restaura o cardápio da Dondoka definido em Configurações.</p>
+          </SectionHelp>
         </section>
       )}
 
@@ -381,19 +410,31 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
             isCustom={!deepEqual(form.servicos_opcionais_dados, defaultServicos)}
             onResetDefault={() => up("servicos_opcionais_dados", defaultServicos)}
           />
+          <SectionHelp title="Como funcionam os serviços opcionais?">
+            <p>É um cardápio de extras (segurança, garçons, cerimonialista etc) que aparecem na proposta como sugestões, com ícones automáticos.</p>
+            <p>O <b>Aviso final</b> é o disclaimer pequeno embaixo dizendo que são contratados à parte — ajuste se mudar a política comercial.</p>
+            <p>Adicione/remova serviços conforme disponibilidade pra cada evento.</p>
+          </SectionHelp>
         </section>
       )}
 
       {/* Fotos */}
       <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">
         <h2 className="font-serif text-xl text-carvao mb-1">Fotos do orçamento</h2>
-        <p className="text-sm text-carvao/55 mb-5">
+        <p className="text-sm text-carvao/55 mb-3">
           Selecione quais fotos aparecem na galeria deste orçamento.
         </p>
-        <FotosPicker
-          selecionadas={form.fotos_selecionadas}
-          onChange={(v) => up("fotos_selecionadas", v)}
-        />
+        <SectionHelp title="Como escolher as fotos">
+          <p>As fotos marcadas aparecem na seção <b>Galeria</b> da proposta pública, em grid responsivo (2 colunas no celular, até 4 no desktop). Clique nela e abre em tela cheia.</p>
+          <p>Você pode fazer upload de fotos novas (botão Upload) e elas vão pro storage do Supabase, ficando disponíveis pra todos os orçamentos.</p>
+          <p>Recomendado: 6 a 12 fotos. Mais que isso fica pesado no carregamento mobile.</p>
+        </SectionHelp>
+        <div className="mt-4">
+          <FotosPicker
+            selecionadas={form.fotos_selecionadas}
+            onChange={(v) => up("fotos_selecionadas", v)}
+          />
+        </div>
       </section>
 
       {/* Observações */}
@@ -406,6 +447,10 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
             className="form-input min-h-[100px]"
           />
         </Field>
+        <SectionHelp title="O que escrever aqui">
+          <p>Anotações suas sobre o cliente, restrições, alergias, decisões de negociação — fica salvo aqui mas <b>nunca aparece na proposta pública</b>.</p>
+          <p>Útil pra lembrar detalhes quando o cliente voltar a falar com você ou quando duplicar este orçamento.</p>
+        </SectionHelp>
       </section>
 
       {erro && (
