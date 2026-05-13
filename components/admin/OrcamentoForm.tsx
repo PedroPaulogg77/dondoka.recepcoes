@@ -434,25 +434,6 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
         </Button>
       </div>
 
-      <style jsx global>{`
-        .form-input {
-          width: 100%;
-          min-height: 2.75rem;
-          padding: 0.5rem 0.875rem;
-          border-radius: 0.5rem;
-          border: 1px solid rgba(219, 209, 195, 0.7);
-          background: #f7f4ee;
-          font-size: 0.95rem;
-        }
-        .form-input:focus {
-          outline: none;
-          border-color: #7f7957;
-        }
-        textarea.form-input {
-          line-height: 1.55;
-          padding: 0.75rem 0.875rem;
-        }
-      `}</style>
     </form>
   );
 }

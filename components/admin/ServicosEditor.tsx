@@ -8,6 +8,29 @@ type Props = {
   onResetDefault?: () => void;
 };
 
+const PillBtn =
+  "inline-flex items-center gap-1.5 px-3 h-8 rounded-full border border-oliva/30 text-oliva text-xs font-medium hover:bg-oliva/5 transition";
+const IconBtn =
+  "w-8 h-8 inline-flex items-center justify-center rounded-full text-carvao/40 hover:bg-rose-50 hover:text-rose-500 transition shrink-0";
+
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
 export function ServicosEditor({ value, onChange, isCustom, onResetDefault }: Props) {
   function updateItem(idx: number, v: string) {
     const lista = [...value.lista];
@@ -23,31 +46,28 @@ export function ServicosEditor({ value, onChange, isCustom, onResetDefault }: Pr
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="font-serif text-lg text-carvao">Serviços opcionais</h3>
-        {onResetDefault && (
-          <div className="flex items-center gap-2">
-            {isCustom ? (
-              <>
-                <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-bronze/15 text-bronze">
-                  Customizado
-                </span>
-                <button
-                  type="button"
-                  onClick={onResetDefault}
-                  className="text-[11px] text-oliva hover:text-bronze underline-offset-4 hover:underline"
-                >
-                  ↺ Voltar ao padrão
-                </button>
-              </>
-            ) : (
-              <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-oliva/10 text-oliva">
-                Padrão
+      {onResetDefault && (
+        <div className="flex items-center justify-end gap-2">
+          {isCustom ? (
+            <>
+              <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-bronze/15 text-bronze">
+                Customizado
               </span>
-            )}
-          </div>
-        )}
-      </div>
+              <button
+                type="button"
+                onClick={onResetDefault}
+                className="text-[11px] text-oliva hover:text-bronze underline-offset-4 hover:underline"
+              >
+                ↺ Voltar ao padrão
+              </button>
+            </>
+          ) : (
+            <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-oliva/10 text-oliva">
+              Padrão
+            </span>
+          )}
+        </div>
+      )}
 
       <label className="block">
         <span className="eyebrow text-bronze">Texto introdutório</span>
@@ -56,38 +76,30 @@ export function ServicosEditor({ value, onChange, isCustom, onResetDefault }: Pr
           value={value.intro}
           onChange={(e) => onChange({ ...value, intro: e.target.value })}
           className="form-input mt-1.5"
+          placeholder="Aparece logo abaixo do título da seção..."
         />
       </label>
 
-      <fieldset className="border border-areia/60 rounded-xl p-4 md:p-5">
-        <legend className="px-2 eyebrow text-bronze">Lista de serviços</legend>
-        <div className="space-y-2">
-          {value.lista.map((s, i) => (
-            <div key={i} className="flex gap-2">
-              <input
-                type="text"
-                value={s}
-                onChange={(e) => updateItem(i, e.target.value)}
-                className="form-input flex-1"
-              />
-              <button
-                type="button"
-                onClick={() => removeItem(i)}
-                className="px-3 text-rose-500 hover:text-rose-700"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addItem}
-            className="text-sm text-oliva hover:text-bronze"
-          >
-            + Adicionar serviço
-          </button>
-        </div>
-      </fieldset>
+      <section className="bg-white border border-areia/50 rounded-xl p-4 md:p-5 space-y-3">
+        <span className="eyebrow text-bronze block">Lista de serviços</span>
+        {value.lista.map((s, i) => (
+          <div key={i} className="flex gap-2 items-center">
+            <input
+              type="text"
+              value={s}
+              onChange={(e) => updateItem(i, e.target.value)}
+              className="form-input flex-1"
+              placeholder="Nome do serviço"
+            />
+            <button type="button" onClick={() => removeItem(i)} className={IconBtn} aria-label="Remover">
+              <TrashIcon />
+            </button>
+          </div>
+        ))}
+        <button type="button" onClick={addItem} className={PillBtn}>
+          <PlusIcon /> Adicionar serviço
+        </button>
+      </section>
 
       <label className="block">
         <span className="eyebrow text-bronze">Aviso final</span>
@@ -96,6 +108,7 @@ export function ServicosEditor({ value, onChange, isCustom, onResetDefault }: Pr
           value={value.disclaimer}
           onChange={(e) => onChange({ ...value, disclaimer: e.target.value })}
           className="form-input mt-1.5"
+          placeholder="Pequeno disclaimer abaixo da lista..."
         />
       </label>
     </div>

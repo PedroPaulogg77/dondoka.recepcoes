@@ -32,13 +32,64 @@ h1, h2, h3, h4 {
 }
 
 /* ===== Premium utilities ===== */
-.eyebrow {
-  font-family: var(--font-inter), Inter, sans-serif;
-  font-size: 0.72rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--bronze);
-  font-weight: 500;
+/* IMPORTANTE: dentro de @layer components para que Tailwind utilities
+   (ex: text-white) tenham PRIORIDADE quando aplicados na mesma tag.
+   Sem isso, .eyebrow { color: bronze } vence text-white e quebra
+   contraste em fundos verdes. */
+@layer components {
+  .eyebrow {
+    font-family: var(--font-inter), Inter, sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--bronze);
+    font-weight: 500;
+  }
+}
+
+/* ===== Form controls (admin / drawers) ===== */
+@layer components {
+  .form-input {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.9375rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(219, 209, 195, 0.6);
+    background: #ffffff;
+    color: var(--carvao);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    box-shadow: 0 1px 2px rgba(16, 12, 4, 0.04);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: var(--oliva);
+    box-shadow: 0 0 0 3px rgba(127, 121, 87, 0.14);
+  }
+  .form-input::placeholder {
+    color: rgba(1, 1, 1, 0.35);
+  }
+  textarea.form-input {
+    line-height: 1.55;
+    padding: 0.75rem 0.9375rem;
+    min-height: 7rem;
+    resize: vertical;
+  }
+  select.form-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237F7957' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+  }
+}
+
+/* Cinta de segurança: dentro de qualquer fundo oliva, força eyebrow pra branco
+   (caso alguém esqueça o override Tailwind). */
+.bg-oliva .eyebrow {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .divider-ornament {

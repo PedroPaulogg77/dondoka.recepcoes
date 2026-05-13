@@ -79,9 +79,9 @@ export function Drawer({ open, onClose, title, subtitle, children, doneLabel = "
                 type="button"
                 onClick={onClose}
                 aria-label="Fechar"
-                className="-mr-1 w-9 h-9 inline-flex items-center justify-center rounded-full text-carvao/55 hover:bg-areia/40 hover:text-carvao transition shrink-0"
+                className="-mr-1 w-8 h-8 inline-flex items-center justify-center rounded-full text-carvao/50 hover:bg-areia/40 hover:text-carvao transition shrink-0"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                   <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
               </button>
