@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { OrcamentoForm } from "@/components/admin/OrcamentoForm";
+import { OrcamentoEditor } from "@/components/admin/OrcamentoEditor";
 import { fetchConfig } from "@/lib/queries";
 import type { Orcamento } from "@/types/orcamento";
 
@@ -14,5 +14,5 @@ export default async function EditarOrcamento({ params }: { params: { id: string
   ]);
   const orcamento = orcamentoRes.data as Orcamento | null;
   if (!orcamento || !config) notFound();
-  return <OrcamentoForm mode="editar" orcamento={orcamento} config={config} />;
+  return <OrcamentoEditor mode="editar" orcamento={orcamento} config={config} />;
 }

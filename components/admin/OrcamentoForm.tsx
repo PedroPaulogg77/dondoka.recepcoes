@@ -11,16 +11,15 @@ import { ServicosEditor } from "./ServicosEditor";
 import { SectionHelp } from "./SectionHelp";
 import { brl } from "@/lib/format";
 import {
-  SECOES_DEFAULT,
-  BUFFET_FALLBACK,
-  SERVICOS_FALLBACK,
+  buildInitialForm,
+  normalizeForSave,
+  resolveDefaults,
+} from "@/lib/orcamento-helpers";
+import {
   type Orcamento,
   type SecoesVisiveis,
-  type ItemOrcamento,
   type StatusOrcamento,
   type ConfigGlobal,
-  type BuffetDados,
-  type ServicosOpcionaisDados,
 } from "@/types/orcamento";
 
 type Mode = "criar" | "editar";
@@ -55,36 +54,14 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  const defaultSobre = config.sobre_texto || "";
-  const defaultDecoracao = config.decoracao_texto || "";
-  const defaultPagamento = config.condicoes_pagamento || "";
-  const defaultBuffet: BuffetDados = config.buffet_dados ?? BUFFET_FALLBACK;
-  const defaultServicos: ServicosOpcionaisDados = config.servicos_opcionais_dados ?? SERVICOS_FALLBACK;
+  const defaults = resolveDefaults(config);
+  const defaultSobre = defaults.sobre;
+  const defaultDecoracao = defaults.decoracao;
+  const defaultPagamento = defaults.pagamento;
+  const defaultBuffet = defaults.buffet;
+  const defaultServicos = defaults.servicos;
 
-  const initialSecoes: SecoesVisiveis = {
-    ...SECOES_DEFAULT,
-    ...(orcamento?.secoes_visiveis || {}),
-  };
-
-  const [form, setForm] = useState({
-    status: (orcamento?.status || "rascunho") as StatusOrcamento,
-    cliente_nome: orcamento?.cliente_nome || "",
-    cliente_evento: orcamento?.cliente_evento || "",
-    cliente_data: orcamento?.cliente_data || "",
-    cliente_horario: orcamento?.cliente_horario || "",
-    cliente_convidados: orcamento?.cliente_convidados ?? 0,
-    secoes_visiveis: initialSecoes,
-    fotos_selecionadas: orcamento?.fotos_selecionadas || config.fotos_default || [],
-    sobre_texto: orcamento?.sobre_texto ?? defaultSobre,
-    decoracao_texto: orcamento?.decoracao_texto ?? defaultDecoracao,
-    itens_espaco: (orcamento?.itens_espaco || []) as ItemOrcamento[],
-    itens_decoracao: (orcamento?.itens_decoracao || []) as ItemOrcamento[],
-    itens_buffet: (orcamento?.itens_buffet || []) as ItemOrcamento[],
-    condicoes_pagamento: orcamento?.condicoes_pagamento ?? defaultPagamento,
-    observacoes: orcamento?.observacoes ?? "",
-    buffet_dados: (orcamento?.buffet_dados ?? defaultBuffet) as BuffetDados,
-    servicos_opcionais_dados: (orcamento?.servicos_opcionais_dados ?? defaultServicos) as ServicosOpcionaisDados,
-  });
+  const [form, setForm] = useState(() => buildInitialForm(config, orcamento));
 
   function up<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -104,26 +81,7 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
     }
     setSalvando(true);
 
-    // Save logic: null se igual ao default (preserva sincronização futura com config)
-    const payload = {
-      ...form,
-      cliente_convidados: form.cliente_convidados || null,
-      cliente_data: form.cliente_data || null,
-      cliente_horario: form.cliente_horario || null,
-      cliente_evento: form.cliente_evento || null,
-      sobre_texto: form.sobre_texto.trim() === defaultSobre.trim() ? null : form.sobre_texto || null,
-      decoracao_texto:
-        form.decoracao_texto.trim() === defaultDecoracao.trim() ? null : form.decoracao_texto || null,
-      condicoes_pagamento:
-        form.condicoes_pagamento.trim() === defaultPagamento.trim()
-          ? null
-          : form.condicoes_pagamento || null,
-      observacoes: form.observacoes || null,
-      buffet_dados: deepEqual(form.buffet_dados, defaultBuffet) ? null : form.buffet_dados,
-      servicos_opcionais_dados: deepEqual(form.servicos_opcionais_dados, defaultServicos)
-        ? null
-        : form.servicos_opcionais_dados,
-    };
+    const payload = normalizeForSave(form, defaults);
 
     const url = mode === "criar" ? "/api/admin/orcamentos" : `/api/admin/orcamentos/${orcamento!.id}`;
     const res = await fetch(url, {
