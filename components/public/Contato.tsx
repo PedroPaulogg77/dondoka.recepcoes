@@ -24,8 +24,8 @@ export function Contato({ config }: { config: ConfigGlobal }) {
   ].filter((i) => i.value);
 
   return (
-    <section id="contato" className="relative py-24 md:py-32 px-6 bg-carvao text-white overflow-hidden">
-      <div className="absolute inset-0 pattern-escuro opacity-25" aria-hidden />
+    <section id="contato" className="relative py-24 md:py-32 px-6 bg-oliva text-white overflow-hidden">
+      <div className="absolute inset-0 pattern-claro opacity-10" aria-hidden />
       <div className="relative max-w-4xl mx-auto text-center">
         <Reveal>
           <Image
@@ -33,13 +33,13 @@ export function Contato({ config }: { config: ConfigGlobal }) {
             alt=""
             width={120}
             height={120}
-            className="mx-auto h-20 w-auto opacity-90 brightness-200"
+            className="mx-auto h-20 w-auto brightness-0 invert opacity-95"
           />
-          <p className="eyebrow mt-8 text-areia">Obrigado pela escolha</p>
+          <p className="eyebrow mt-8 text-white/70">Obrigado pela escolha</p>
           <h2 className="mt-3 text-3xl md:text-5xl text-white font-serif italic">
             Celebre o essencial
           </h2>
-          <p className="mt-4 text-areia/80 max-w-lg mx-auto">
+          <p className="mt-4 text-white/85 max-w-lg mx-auto">
             Será um prazer fazer parte deste momento especial. Vamos conversar?
           </p>
         </Reveal>
@@ -49,20 +49,20 @@ export function Contato({ config }: { config: ConfigGlobal }) {
             {items.map((item) => (
               <div
                 key={item.label}
-                className="border border-areia/20 rounded-2xl p-6 text-left hover:border-areia/50 transition"
+                className="border border-white/25 rounded-2xl p-6 text-left hover:border-white/60 transition backdrop-blur-sm"
               >
-                <div className="eyebrow text-areia/60">{item.label}</div>
+                <div className="eyebrow text-white/60">{item.label}</div>
                 {item.href ? (
                   <a
                     href={item.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-2 block font-serif text-lg text-white hover:text-areia"
+                    className="mt-2 block font-serif text-lg text-white hover:text-creme break-words"
                   >
                     {item.value}
                   </a>
                 ) : (
-                  <p className="mt-2 font-serif text-lg text-white">{item.value}</p>
+                  <p className="mt-2 font-serif text-lg text-white break-words">{item.value}</p>
                 )}
               </div>
             ))}

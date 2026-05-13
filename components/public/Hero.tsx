@@ -23,7 +23,7 @@ export function Hero({ orcamento }: { orcamento: Orcamento }) {
             width={260}
             height={260}
             priority
-            className="mx-auto h-32 md:h-44 w-auto"
+            className="mx-auto h-24 sm:h-32 md:h-44 w-auto max-w-[75vw] object-contain"
           />
         </motion.div>
 

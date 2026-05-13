@@ -26,6 +26,8 @@ export async function POST() {
       sobre: true,
       galeria: true,
       decoracao: true,
+      buffet: true,
+      servicos: true,
       dados: true,
       investimento: true,
       pagamento: true,
@@ -63,6 +65,8 @@ export async function POST() {
     ],
     condicoes_pagamento: null,
     observacoes: "Orçamento de exemplo — duplique este e edite para criar um real.",
+    buffet_dados: null,
+    servicos_opcionais_dados: null,
   };
 
   const base = generateSlugCandidates(exemplo.cliente_nome, exemplo.cliente_evento);

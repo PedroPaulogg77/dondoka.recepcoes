@@ -20,16 +20,16 @@ function CategoryBlock({ categoria }: { categoria: Categoria }) {
   const total = subtotal(categoria.itens);
   return (
     <Reveal>
-      <div className="bg-white rounded-2xl border border-areia/60 shadow-soft overflow-hidden">
-        <div className="px-6 md:px-10 py-5 bg-areia/30 flex justify-between items-baseline">
-          <h3 className="text-xl md:text-2xl">{categoria.titulo}</h3>
-          <span className="font-serif text-bronze">{brl(total)}</span>
+      <div>
+        <div className="flex justify-between items-baseline px-1 pb-3 border-b border-areia/60">
+          <h3 className="font-serif text-lg md:text-xl text-carvao">{categoria.titulo}</h3>
+          <span className="font-serif text-bronze tabular-nums">{brl(total)}</span>
         </div>
-        <ul className="divide-y divide-areia/40">
+        <ul>
           {categoria.itens.map((item) => (
             <li
               key={item.id}
-              className="px-6 md:px-10 py-4 flex justify-between items-baseline gap-4"
+              className="px-1 py-4 flex justify-between items-baseline gap-4 border-b border-areia/40 last:border-b-0"
             >
               <div className="flex-1 min-w-0">
                 <p className="text-carvao/85">{item.descricao}</p>
@@ -95,19 +95,19 @@ export function Investimento({
       <div className="max-w-4xl mx-auto">
         <SectionTitle eyebrow="Investimento" title="Resumo da proposta" />
 
-        <div className="mt-12 space-y-5">
+        <div className="mt-12 space-y-12">
           <CategoryBlock categoria={{ titulo: "Espaço", itens: espaco }} />
           <CategoryBlock categoria={{ titulo: "Decoração", itens: decoracao }} />
           <CategoryBlock categoria={{ titulo: "Buffet", itens: buffet }} />
         </div>
 
         <Reveal>
-          <div className="mt-8 relative overflow-hidden rounded-2xl bg-carvao text-white p-8 md:p-12 shadow-premium">
-            <div className="absolute inset-0 pattern-escuro opacity-20" aria-hidden />
+          <div className="mt-12 relative overflow-hidden rounded-2xl bg-oliva text-white p-8 md:p-12 shadow-premium">
+            <div className="absolute inset-0 pattern-claro opacity-10" aria-hidden />
             <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div>
-                <div className="eyebrow text-areia">Valor total</div>
-                <p className="mt-2 text-areia/70 text-sm max-w-xs">
+                <div className="eyebrow text-white/70">Valor total</div>
+                <p className="mt-2 text-white/75 text-sm max-w-xs">
                   Investimento completo para sua celebração no espaço Dondoka.
                 </p>
               </div>

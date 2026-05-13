@@ -1,44 +1,14 @@
 "use client";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
-
-const ICONS = {
-  capacidade: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  ),
-  climatizado: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <path d="M2 12h20M12 2v20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" />
-    </svg>
-  ),
-  banheiros: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <path d="M9 6V3M15 6V3M3 11h18M5 11v9a1 1 0 001 1h12a1 1 0 001-1v-9" />
-    </svg>
-  ),
-  cozinha: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <path d="M3 11h18l-1.5 9h-15zM5 11V7a3 3 0 016 0M13 11V7a3 3 0 016 0" />
-    </svg>
-  ),
-  kids: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <circle cx="12" cy="6" r="3" />
-      <path d="M12 9v6M9 13l-3 5M15 13l3 5M9 21h6" />
-    </svg>
-  ),
-};
+import { IconCapacidade, IconClimatizado, IconBanheiros, IconCozinha, IconKids } from "@/components/ui/Icons";
 
 const FEATURES = [
-  { icon: ICONS.capacidade, titulo: "Até 70 pessoas", descricao: "Capacidade confortável para eventos sociais e corporativos." },
-  { icon: ICONS.climatizado, titulo: "Climatizado", descricao: "Ambiente totalmente climatizado, em qualquer estação." },
-  { icon: ICONS.banheiros, titulo: "3 banheiros", descricao: "Sendo um com acessibilidade e fraldário." },
-  { icon: ICONS.cozinha, titulo: "Cozinha equipada", descricao: "Estrutura completa para buffet e produção do evento." },
-  { icon: ICONS.kids, titulo: "Espaço kids", descricao: "Área dedicada para as crianças aproveitarem com segurança." },
+  { icon: <IconCapacidade className="w-6 h-6" />, titulo: "Até 70 pessoas", descricao: "Capacidade confortável para eventos sociais e corporativos." },
+  { icon: <IconClimatizado className="w-6 h-6" />, titulo: "Climatizado", descricao: "Ambiente totalmente climatizado, em qualquer estação." },
+  { icon: <IconBanheiros className="w-6 h-6" />, titulo: "3 banheiros", descricao: "Sendo um com acessibilidade e fraldário." },
+  { icon: <IconCozinha className="w-6 h-6" />, titulo: "Cozinha equipada", descricao: "Estrutura completa para buffet e produção do evento." },
+  { icon: <IconKids className="w-6 h-6" />, titulo: "Espaço kids", descricao: "Área dedicada para as crianças aproveitarem com segurança." },
 ];
 
 export function SobreEspaco({ texto }: { texto: string | null }) {

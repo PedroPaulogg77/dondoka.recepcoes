@@ -3,7 +3,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { FotosPicker } from "./FotosPicker";
-import type { ConfigGlobal } from "@/types/orcamento";
+import { BuffetEditor } from "./BuffetEditor";
+import { ServicosEditor } from "./ServicosEditor";
+import {
+  BUFFET_FALLBACK,
+  SERVICOS_FALLBACK,
+  type ConfigGlobal,
+  type BuffetDados,
+  type ServicosOpcionaisDados,
+} from "@/types/orcamento";
 
 export function ConfigForm({ config }: { config: ConfigGlobal }) {
   const router = useRouter();
@@ -19,6 +27,8 @@ export function ConfigForm({ config }: { config: ConfigGlobal }) {
     contato_email: config.contato_email || "",
     contato_endereco: config.contato_endereco || "",
     fotos_default: config.fotos_default || [],
+    buffet_dados: (config.buffet_dados ?? BUFFET_FALLBACK) as BuffetDados,
+    servicos_opcionais_dados: (config.servicos_opcionais_dados ?? SERVICOS_FALLBACK) as ServicosOpcionaisDados,
   });
 
   function up<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
@@ -61,6 +71,17 @@ export function ConfigForm({ config }: { config: ConfigGlobal }) {
           value={form.condicoes_pagamento}
           onChange={(v) => up("condicoes_pagamento", v)}
           rows={5}
+        />
+      </section>
+
+      <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">
+        <BuffetEditor value={form.buffet_dados} onChange={(v) => up("buffet_dados", v)} />
+      </section>
+
+      <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">
+        <ServicosEditor
+          value={form.servicos_opcionais_dados}
+          onChange={(v) => up("servicos_opcionais_dados", v)}
         />
       </section>
 

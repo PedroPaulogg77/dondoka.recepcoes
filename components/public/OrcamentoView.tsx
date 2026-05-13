@@ -4,12 +4,14 @@ import { Hero } from "./Hero";
 import { SobreEspaco } from "./SobreEspaco";
 import { Galeria } from "./Galeria";
 import { Decoracao } from "./Decoracao";
+import { Buffet } from "./Buffet";
+import { ServicosOpcionais } from "./ServicosOpcionais";
 import { DadosEvento } from "./DadosEvento";
 import { Investimento } from "./Investimento";
 import { Pagamento } from "./Pagamento";
 import { Contato } from "./Contato";
 import { FloatingActions } from "./FloatingActions";
-import type { ConfigGlobal, Orcamento } from "@/types/orcamento";
+import { BUFFET_FALLBACK, SERVICOS_FALLBACK, type ConfigGlobal, type Orcamento } from "@/types/orcamento";
 
 type Props = { orcamento: Orcamento; config: ConfigGlobal };
 
@@ -22,6 +24,9 @@ export function OrcamentoView({ orcamento, config }: Props) {
     ? orcamento.fotos_selecionadas
     : config.fotos_default || [];
 
+  const buffetDados = orcamento.buffet_dados ?? config.buffet_dados ?? BUFFET_FALLBACK;
+  const servicosDados = orcamento.servicos_opcionais_dados ?? config.servicos_opcionais_dados ?? SERVICOS_FALLBACK;
+
   const mensagemWpp = `Olá! Acabei de ver a proposta da Dondoka Recepções e gostaria de conversar. (Proposta: ${process.env.NEXT_PUBLIC_APP_URL}/orcamento/${orcamento.slug})`;
 
   return (
@@ -31,6 +36,8 @@ export function OrcamentoView({ orcamento, config }: Props) {
       {s.sobre && <SobreEspaco texto={sobreTexto} />}
       {s.galeria && <Galeria fotos={fotos} />}
       {s.decoracao && <Decoracao texto={decoracaoTexto} itens={orcamento.itens_decoracao} />}
+      {s.buffet && <Buffet dados={buffetDados} />}
+      {s.servicos && <ServicosOpcionais dados={servicosDados} />}
       {s.dados && <DadosEvento orcamento={orcamento} />}
       {s.investimento && (
         <Investimento

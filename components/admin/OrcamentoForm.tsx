@@ -5,8 +5,22 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { ItensEditor } from "./ItensEditor";
 import { FotosPicker } from "./FotosPicker";
-import { brl, slugify } from "@/lib/format";
-import { SECOES_DEFAULT, type Orcamento, type SecoesVisiveis, type ItemOrcamento, type StatusOrcamento, type ConfigGlobal } from "@/types/orcamento";
+import { EditableTextField } from "./EditableTextField";
+import { BuffetEditor } from "./BuffetEditor";
+import { ServicosEditor } from "./ServicosEditor";
+import { brl } from "@/lib/format";
+import {
+  SECOES_DEFAULT,
+  BUFFET_FALLBACK,
+  SERVICOS_FALLBACK,
+  type Orcamento,
+  type SecoesVisiveis,
+  type ItemOrcamento,
+  type StatusOrcamento,
+  type ConfigGlobal,
+  type BuffetDados,
+  type ServicosOpcionaisDados,
+} from "@/types/orcamento";
 
 type Mode = "criar" | "editar";
 
@@ -20,6 +34,8 @@ const SECOES_LABEL: Array<[keyof SecoesVisiveis, string]> = [
   ["sobre", "Sobre o espaço"],
   ["galeria", "Galeria de fotos"],
   ["decoracao", "Decoração"],
+  ["buffet", "Buffet (cardápio)"],
+  ["servicos", "Serviços opcionais"],
   ["dados", "Dados do evento"],
   ["investimento", "Resumo do investimento"],
   ["pagamento", "Forma de pagamento"],
@@ -28,11 +44,26 @@ const SECOES_LABEL: Array<[keyof SecoesVisiveis, string]> = [
 
 const STATUS_OPTIONS: StatusOrcamento[] = ["rascunho", "enviado", "aceito", "recusado"];
 
+function deepEqual<T>(a: T, b: T): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 export function OrcamentoForm({ mode, orcamento, config }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+
+  const defaultSobre = config.sobre_texto || "";
+  const defaultDecoracao = config.decoracao_texto || "";
+  const defaultPagamento = config.condicoes_pagamento || "";
+  const defaultBuffet: BuffetDados = config.buffet_dados ?? BUFFET_FALLBACK;
+  const defaultServicos: ServicosOpcionaisDados = config.servicos_opcionais_dados ?? SERVICOS_FALLBACK;
+
+  const initialSecoes: SecoesVisiveis = {
+    ...SECOES_DEFAULT,
+    ...(orcamento?.secoes_visiveis || {}),
+  };
 
   const [form, setForm] = useState({
     status: (orcamento?.status || "rascunho") as StatusOrcamento,
@@ -41,15 +72,17 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
     cliente_data: orcamento?.cliente_data || "",
     cliente_horario: orcamento?.cliente_horario || "",
     cliente_convidados: orcamento?.cliente_convidados ?? 0,
-    secoes_visiveis: (orcamento?.secoes_visiveis || SECOES_DEFAULT) as SecoesVisiveis,
+    secoes_visiveis: initialSecoes,
     fotos_selecionadas: orcamento?.fotos_selecionadas || config.fotos_default || [],
-    sobre_texto: orcamento?.sobre_texto ?? "",
-    decoracao_texto: orcamento?.decoracao_texto ?? "",
+    sobre_texto: orcamento?.sobre_texto ?? defaultSobre,
+    decoracao_texto: orcamento?.decoracao_texto ?? defaultDecoracao,
     itens_espaco: (orcamento?.itens_espaco || []) as ItemOrcamento[],
     itens_decoracao: (orcamento?.itens_decoracao || []) as ItemOrcamento[],
     itens_buffet: (orcamento?.itens_buffet || []) as ItemOrcamento[],
-    condicoes_pagamento: orcamento?.condicoes_pagamento ?? "",
+    condicoes_pagamento: orcamento?.condicoes_pagamento ?? defaultPagamento,
     observacoes: orcamento?.observacoes ?? "",
+    buffet_dados: (orcamento?.buffet_dados ?? defaultBuffet) as BuffetDados,
+    servicos_opcionais_dados: (orcamento?.servicos_opcionais_dados ?? defaultServicos) as ServicosOpcionaisDados,
   });
 
   function up<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -70,16 +103,25 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
     }
     setSalvando(true);
 
+    // Save logic: null se igual ao default (preserva sincronização futura com config)
     const payload = {
       ...form,
       cliente_convidados: form.cliente_convidados || null,
       cliente_data: form.cliente_data || null,
       cliente_horario: form.cliente_horario || null,
       cliente_evento: form.cliente_evento || null,
-      sobre_texto: form.sobre_texto || null,
-      decoracao_texto: form.decoracao_texto || null,
-      condicoes_pagamento: form.condicoes_pagamento || null,
+      sobre_texto: form.sobre_texto.trim() === defaultSobre.trim() ? null : form.sobre_texto || null,
+      decoracao_texto:
+        form.decoracao_texto.trim() === defaultDecoracao.trim() ? null : form.decoracao_texto || null,
+      condicoes_pagamento:
+        form.condicoes_pagamento.trim() === defaultPagamento.trim()
+          ? null
+          : form.condicoes_pagamento || null,
       observacoes: form.observacoes || null,
+      buffet_dados: deepEqual(form.buffet_dados, defaultBuffet) ? null : form.buffet_dados,
+      servicos_opcionais_dados: deepEqual(form.servicos_opcionais_dados, defaultServicos)
+        ? null
+        : form.servicos_opcionais_dados,
     };
 
     const url = mode === "criar" ? "/api/admin/orcamentos" : `/api/admin/orcamentos/${orcamento!.id}`;
@@ -261,7 +303,7 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
         </div>
       </section>
 
-      {/* Itens — Espaço, Decoração, Buffet */}
+      {/* Itens — Espaço, Decoração, Buffet (valores financeiros) */}
       <section>
         <h2 className="font-serif text-xl text-carvao mb-4">Itens do orçamento</h2>
         <div className="space-y-4">
@@ -281,46 +323,66 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
             onChange={(v) => up("itens_buffet", v)}
           />
         </div>
-        <div className="mt-4 px-6 py-4 rounded-2xl bg-carvao text-white flex justify-between items-center">
-          <span className="eyebrow text-areia">Total geral</span>
+        <div className="mt-4 px-6 py-4 rounded-2xl bg-oliva text-white flex justify-between items-center">
+          <span className="eyebrow text-white/70">Total geral</span>
           <span className="text-2xl font-serif tabular-nums">{brl(total)}</span>
         </div>
       </section>
 
-      {/* Textos */}
-      <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft space-y-5">
-        <h2 className="font-serif text-xl text-carvao">Textos personalizados (opcional)</h2>
-        <p className="text-sm text-carvao/55 -mt-3">
-          Deixe em branco para usar os textos padrão das Configurações.
-        </p>
-        <Field label="Sobre o espaço (override)">
-          <textarea
-            rows={6}
-            value={form.sobre_texto}
-            placeholder={config.sobre_texto || ""}
-            onChange={(e) => up("sobre_texto", e.target.value)}
-            className="form-input min-h-[140px]"
-          />
-        </Field>
-        <Field label="Decoração (override)">
-          <textarea
-            rows={6}
-            value={form.decoracao_texto}
-            placeholder={config.decoracao_texto || ""}
-            onChange={(e) => up("decoracao_texto", e.target.value)}
-            className="form-input min-h-[140px]"
-          />
-        </Field>
-        <Field label="Condições de pagamento (override)">
-          <textarea
-            rows={4}
-            value={form.condicoes_pagamento}
-            placeholder={config.condicoes_pagamento || ""}
-            onChange={(e) => up("condicoes_pagamento", e.target.value)}
-            className="form-input min-h-[120px]"
-          />
-        </Field>
+      {/* Textos editáveis com pré-população + voltar ao padrão */}
+      <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft space-y-6">
+        <div>
+          <h2 className="font-serif text-xl text-carvao">Textos da proposta</h2>
+          <p className="text-sm text-carvao/55 mt-1">
+            Os textos abaixo já vêm pré-preenchidos com o padrão da Dondoka. Edite à vontade — o badge mostra se você customizou ou está usando o padrão.
+          </p>
+        </div>
+        <EditableTextField
+          label="Sobre o espaço"
+          value={form.sobre_texto}
+          defaultValue={defaultSobre}
+          onChange={(v) => up("sobre_texto", v)}
+          rows={8}
+        />
+        <EditableTextField
+          label="Decoração"
+          value={form.decoracao_texto}
+          defaultValue={defaultDecoracao}
+          onChange={(v) => up("decoracao_texto", v)}
+          rows={6}
+        />
+        <EditableTextField
+          label="Condições de pagamento"
+          value={form.condicoes_pagamento}
+          defaultValue={defaultPagamento}
+          onChange={(v) => up("condicoes_pagamento", v)}
+          rows={5}
+        />
       </section>
+
+      {/* Buffet editor (cardápio) */}
+      {form.secoes_visiveis.buffet && (
+        <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">
+          <BuffetEditor
+            value={form.buffet_dados}
+            onChange={(v) => up("buffet_dados", v)}
+            isCustom={!deepEqual(form.buffet_dados, defaultBuffet)}
+            onResetDefault={() => up("buffet_dados", defaultBuffet)}
+          />
+        </section>
+      )}
+
+      {/* Serviços opcionais editor */}
+      {form.secoes_visiveis.servicos && (
+        <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">
+          <ServicosEditor
+            value={form.servicos_opcionais_dados}
+            onChange={(v) => up("servicos_opcionais_dados", v)}
+            isCustom={!deepEqual(form.servicos_opcionais_dados, defaultServicos)}
+            onResetDefault={() => up("servicos_opcionais_dados", defaultServicos)}
+          />
+        </section>
+      )}
 
       {/* Fotos */}
       <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft">

@@ -4,6 +4,8 @@ export type SecoesVisiveis = {
   sobre: boolean;
   galeria: boolean;
   decoracao: boolean;
+  buffet: boolean;
+  servicos: boolean;
   dados: boolean;
   investimento: boolean;
   pagamento: boolean;
@@ -15,6 +17,19 @@ export type ItemOrcamento = {
   descricao: string;
   qtd: number;
   valor_unitario: number;
+};
+
+export type BuffetDados = {
+  entrada: { titulo: string; itens: string[] };
+  principal: { opcoes: Array<{ titulo: string; itens: string[] }> };
+  bebidas: string[];
+  servico: string;
+};
+
+export type ServicosOpcionaisDados = {
+  intro: string;
+  lista: string[];
+  disclaimer: string;
 };
 
 export type Orcamento = {
@@ -41,6 +56,9 @@ export type Orcamento = {
   condicoes_pagamento: string | null;
   observacoes: string | null;
 
+  buffet_dados: BuffetDados | null;
+  servicos_opcionais_dados: ServicosOpcionaisDados | null;
+
   created_at: string;
   updated_at: string;
   sent_at: string | null;
@@ -57,6 +75,8 @@ export type ConfigGlobal = {
   contato_email: string | null;
   contato_endereco: string | null;
   fotos_default: string[];
+  buffet_dados: BuffetDados | null;
+  servicos_opcionais_dados: ServicosOpcionaisDados | null;
   updated_at: string;
 };
 
@@ -64,8 +84,32 @@ export const SECOES_DEFAULT: SecoesVisiveis = {
   sobre: true,
   galeria: true,
   decoracao: true,
+  buffet: false,
+  servicos: true,
   dados: true,
   investimento: true,
   pagamento: true,
   contato: true,
+};
+
+// Fallback hardcoded para quando o config_global ainda não foi migrado
+export const BUFFET_FALLBACK: BuffetDados = {
+  entrada: {
+    titulo: "Cantinho mineiro",
+    itens: ["Linguiça", "Almôndega", "Mandioca", "Batata", "Torresmo", "Mussarela", "Ovo de codorna", "Azeitona", "Torradas"],
+  },
+  principal: {
+    opcoes: [
+      { titulo: "Feijoada completa", itens: ["Arroz", "Couve", "Laranja", "Farofa"] },
+      { titulo: "Feijão tropeiro e lombo assado", itens: ["Arroz", "Couve"] },
+    ],
+  },
+  bebidas: ["Refrigerante", "Suco de caixinha", "Água"],
+  servico: "Equipe completa de cozinha e copa durante todo o evento, com louças, talheres, copos e guardanapos inclusos.",
+};
+
+export const SERVICOS_FALLBACK: ServicosOpcionaisDados = {
+  intro: "Pensando em proporcionar uma experiência ainda mais completa, a Dondoka Recepções oferece serviços adicionais para auxiliar na organização e execução do seu evento:",
+  lista: ["Segurança", "Recepcionista", "Cerimonialista", "Apoio de limpeza", "Garçons", "Música ao vivo"],
+  disclaimer: "Serviços contratados à parte, conforme disponibilidade e necessidade do evento.",
 };
