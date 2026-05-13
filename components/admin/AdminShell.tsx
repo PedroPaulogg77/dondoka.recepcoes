@@ -28,11 +28,19 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-creme">
       <header className="sticky top-0 z-40 bg-white/85 backdrop-blur border-b border-areia/60">
         <div className="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-4">
-          <Link href="/admin" className="flex items-center gap-3">
-            <Image src="/logos/icone-1.png" alt="Dondoka" width={36} height={36} className="h-8 w-auto" />
-            <span className="font-serif text-lg text-carvao hidden sm:inline">Dondoka · Admin</span>
+          {/* Logo — shrink-0 para não ser comprimido pelos itens do nav */}
+          <Link href="/admin" className="flex items-center gap-2.5 shrink-0">
+            <Image
+              src="/logos/icone-1.png"
+              alt="Dondoka"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain shrink-0"
+            />
+            <span className="font-serif text-base text-carvao hidden md:inline">Dondoka · Admin</span>
           </Link>
-          <nav className="flex items-center gap-1">
+
+          <nav className="flex items-center gap-0.5 shrink-0">
             {NAV.map((n) => {
               const active = pathname === n.href || (n.href !== "/admin" && pathname.startsWith(n.href));
               const isActive = n.href === "/admin" ? pathname === "/admin" : active;
@@ -41,18 +49,22 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   key={n.href}
                   href={n.href}
                   className={cn(
-                    "px-3 md:px-4 h-9 inline-flex items-center rounded-full text-sm transition",
+                    "px-2.5 md:px-4 h-9 inline-flex items-center rounded-full text-sm transition whitespace-nowrap",
                     isActive ? "bg-oliva text-white" : "text-carvao/70 hover:bg-areia/40"
                   )}
                 >
-                  {n.label}
+                  {/* Label curto no mobile, completo no desktop */}
+                  <span className="sm:hidden">
+                    {n.href === "/admin" ? "Propostas" : "Config"}
+                  </span>
+                  <span className="hidden sm:inline">{n.label}</span>
                 </Link>
               );
             })}
             <GuiaUso />
             <button
               onClick={logout}
-              className="ml-1 px-3 h-9 text-sm text-carvao/60 hover:text-carvao"
+              className="ml-0.5 px-2.5 md:px-3 h-9 text-sm text-carvao/60 hover:text-carvao whitespace-nowrap"
             >
               Sair
             </button>

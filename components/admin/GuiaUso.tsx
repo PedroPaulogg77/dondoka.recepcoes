@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
@@ -266,6 +267,10 @@ const SECOES: Secao[] = [
 export function GuiaUso() {
   const [open, setOpen] = useState(false);
   const [secaoAberta, setSecaoAberta] = useState<string>("configurar");
+  const [mounted, setMounted] = useState(false);
+
+  // Precisa estar montado no client para usar createPortal
+  useEffect(() => { setMounted(true); }, []);
 
   const secaoAtual = SECOES.find((s) => s.id === secaoAberta) ?? SECOES[0];
 
@@ -286,11 +291,12 @@ export function GuiaUso() {
         <span className="hidden sm:inline">Ajuda</span>
       </button>
 
-      {/* Modal */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-[120] flex items-end md:items-center md:justify-center"
+      {/* Modal — renderizado no body via portal para evitar z-index/stacking context do header */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              className="fixed inset-0 z-[9999] flex items-end md:items-center md:justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -435,8 +441,10 @@ export function GuiaUso() {
               </footer>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }
