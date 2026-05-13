@@ -7,6 +7,18 @@ type Props = {
 };
 
 export function FloatingActions({ whatsapp, mensagem }: Props) {
+  async function imprimirPDF() {
+    // Avisa componentes que estamos prestes a imprimir
+    // (Investimento e outros escutam pra forçar estado expandido)
+    window.dispatchEvent(new Event("prepare-print"));
+    // Espera 2 frames pra React fazer re-render e DOM atualizar
+    await new Promise((r) => requestAnimationFrame(r));
+    await new Promise((r) => requestAnimationFrame(r));
+    // E mais um beat pequeno pra garantir layout pintado
+    await new Promise((r) => setTimeout(r, 80));
+    window.print();
+  }
+
   return (
     <motion.div
       initial={{ y: 80, opacity: 0 }}
@@ -29,7 +41,7 @@ export function FloatingActions({ whatsapp, mensagem }: Props) {
       )}
       <button
         type="button"
-        onClick={() => window.print()}
+        onClick={imprimirPDF}
         className="inline-flex items-center justify-center gap-2 px-5 h-12 rounded-full bg-carvao text-white shadow-premium hover:bg-oliva transition font-medium text-sm"
         aria-label="Baixar PDF"
       >

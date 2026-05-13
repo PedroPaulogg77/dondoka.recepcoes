@@ -126,7 +126,7 @@ html { scroll-behavior: smooth; }
 @media print {
   @page {
     size: A4;
-    margin: 14mm 12mm;
+    margin: 6mm 6mm;
   }
   html, body {
     background: var(--branco) !important;
@@ -135,24 +135,58 @@ html { scroll-behavior: smooth; }
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    /* Mata animações/transições pro print não esperar nada */
+    animation: none !important;
+    transition: none !important;
   }
-  .no-print { display: none !important; }
-  .print-break-before { break-before: page; page-break-before: always; }
-  section {
-    break-inside: avoid;
-    page-break-inside: avoid;
+  /* Reveal (Framer Motion) — força estado final independente do scroll */
+  .reveal,
+  [class*="reveal"] {
+    opacity: 1 !important;
+    transform: none !important;
   }
+  /* Investimento — força categorias abertas */
+  .cat-items {
+    height: auto !important;
+    max-height: none !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  /* Esconde tudo que é admin/flutuante */
+  .no-print,
+  header.sticky,
+  [role="dialog"],
+  [data-radix-portal] {
+    display: none !important;
+  }
+  /* Hero: não ocupa tela cheia no PDF */
   .hero-print-compact {
     min-height: 0 !important;
     height: auto !important;
-    padding-top: 2rem !important;
-    padding-bottom: 2rem !important;
+    padding-top: 1.25rem !important;
+    padding-bottom: 1.25rem !important;
   }
+  /* Cada seção respira mas não fica forçada a quebrar página vazia */
+  section {
+    break-inside: auto;
+    page-break-inside: auto;
+    padding-top: 1.25rem !important;
+    padding-bottom: 1.25rem !important;
+  }
+  /* Imagens ficam contidas, sem cortar e sem ocupar página cheia */
   img {
-    max-height: 18cm;
+    max-height: 14cm;
     object-fit: cover;
   }
+  /* Evita "URL" extra após links */
   a[href]::after { content: ""; }
+  /* Em fundos verdes/oliva os backgrounds precisam ser preservados */
+  .bg-oliva { background-color: var(--oliva) !important; }
+  /* Texto dentro de oliva fica branco */
+  .bg-oliva, .bg-oliva * { color: white !important; }
+  .bg-oliva .eyebrow,
+  .bg-oliva .text-bronze { color: rgba(255,255,255,0.85) !important; }
 }
 
 /* Hide scrollbar on horizontal galleries */

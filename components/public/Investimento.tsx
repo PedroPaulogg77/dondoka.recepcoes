@@ -17,6 +17,20 @@ function subtotal(itens: ItemOrcamento[]) {
 
 function CategoryRow({ categoria }: { categoria: Categoria }) {
   const [open, setOpen] = useState(false);
+
+  // Auto-abre quando o navegador inicia print → garante PDF com tudo visível
+  useEffect(() => {
+    function forceOpen() {
+      setOpen(true);
+    }
+    window.addEventListener("beforeprint", forceOpen);
+    window.addEventListener("prepare-print", forceOpen);
+    return () => {
+      window.removeEventListener("beforeprint", forceOpen);
+      window.removeEventListener("prepare-print", forceOpen);
+    };
+  }, []);
+
   if (!categoria.itens.length) return null;
   const total = subtotal(categoria.itens);
 
@@ -54,7 +68,7 @@ function CategoryRow({ categoria }: { categoria: Categoria }) {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="overflow-hidden"
+              className="overflow-hidden cat-items"
             >
               <div className="pb-4 pl-7 md:pl-9 pr-1 space-y-2">
                 {categoria.itens.map((item) => (
@@ -88,6 +102,19 @@ function TotalCounter({ total }: { total: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
   const [display, setDisplay] = useState(0);
+
+  // Print: snap pro valor final
+  useEffect(() => {
+    function snap() {
+      setDisplay(total);
+    }
+    window.addEventListener("beforeprint", snap);
+    window.addEventListener("prepare-print", snap);
+    return () => {
+      window.removeEventListener("beforeprint", snap);
+      window.removeEventListener("prepare-print", snap);
+    };
+  }, [total]);
 
   useEffect(() => {
     if (!inView) return;
@@ -160,17 +187,6 @@ export function Investimento({
             </div>
           </div>
         </Reveal>
-
-        {/* Versão print: mostra tudo aberto */}
-        <style jsx global>{`
-          @media print {
-            #investimento ul {
-              height: auto !important;
-              opacity: 1 !important;
-              display: block !important;
-            }
-          }
-        `}</style>
       </div>
     </section>
   );

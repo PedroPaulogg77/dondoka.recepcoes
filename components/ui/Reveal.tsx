@@ -15,7 +15,7 @@ export function Reveal({ children, delay = 0, y = 32, className, as = "div" }: P
   const Comp = motion[as];
   return (
     <Comp
-      className={className}
+      className={`reveal ${className || ""}`}
       initial={{ opacity: 0, y: reduce ? 0 : y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
