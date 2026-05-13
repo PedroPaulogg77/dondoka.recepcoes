@@ -126,7 +126,7 @@ html { scroll-behavior: smooth; }
 @media print {
   @page {
     size: A4;
-    margin: 6mm 6mm;
+    margin: 10mm 8mm;
   }
   html, body {
     background: var(--branco) !important;
@@ -135,17 +135,30 @@ html { scroll-behavior: smooth; }
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    /* Mata animações/transições pro print não esperar nada */
     animation: none !important;
     transition: none !important;
   }
-  /* Reveal (Framer Motion) — força estado final independente do scroll */
+
+  /* ── Visibilidade ── */
+  .no-print,
+  header.sticky,
+  [role="dialog"],
+  [data-radix-portal] {
+    display: none !important;
+  }
+  /* Galeria de fotos → remove no PDF para evitar quebras de imagem */
+  #galeria {
+    display: none !important;
+  }
+
+  /* ── Reveal (Framer Motion) — força estado final ── */
   .reveal,
   [class*="reveal"] {
     opacity: 1 !important;
     transform: none !important;
   }
-  /* Investimento — força categorias abertas */
+
+  /* ── Investimento — força categorias abertas ── */
   .cat-items {
     height: auto !important;
     max-height: none !important;
@@ -153,36 +166,92 @@ html { scroll-behavior: smooth; }
     overflow: visible !important;
     display: block !important;
   }
-  /* Esconde tudo que é admin/flutuante */
-  .no-print,
-  header.sticky,
-  [role="dialog"],
-  [data-radix-portal] {
-    display: none !important;
-  }
-  /* Hero: não ocupa tela cheia no PDF */
+
+  /* ── Hero compacto ── */
   .hero-print-compact {
     min-height: 0 !important;
     height: auto !important;
-    padding-top: 1.25rem !important;
-    padding-bottom: 1.25rem !important;
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
   }
-  /* Cada seção respira mas não fica forçada a quebrar página vazia */
+
+  /* ── Seções: espaçamento reduzido, quebra entre seções OK ── */
   section {
-    break-inside: auto;
-    page-break-inside: auto;
     padding-top: 1.25rem !important;
     padding-bottom: 1.25rem !important;
+    break-before: auto;
+    break-after: auto;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
   }
-  /* Imagens ficam contidas, sem cortar e sem ocupar página cheia */
+
+  /* ── Blocos de conteúdo: nunca quebrar no meio ── */
+  /* Cada Reveal wrapper fica junto */
+  .reveal {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Cards brancos (Decoração, Buffet) */
+  .rounded-2xl,
+  .rounded-xl {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Itens de lista (serviços, decoração, itens de orçamento) */
+  li {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Cada item de orçamento na categoria (investimento) */
+  .cat-items li,
+  .cat-items > div {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Botão/linha de categoria (investimento) */
+  .border-b {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Opções de buffet */
+  .space-y-7 > div {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Total geral (caixa verde) */
+  .shadow-premium {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Textos e parágrafos */
+  p, h1, h2, h3, h4 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* ── Imagens: contidas, sem cortar ── */
   img {
-    max-height: 14cm;
+    max-height: 12cm;
     object-fit: cover;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
-  /* Evita "URL" extra após links */
+
+  /* ── Sem URL após links ── */
   a[href]::after { content: ""; }
-  /* Em fundos verdes/oliva os backgrounds precisam ser preservados */
+
+  /* ── Fundos coloridos preservados ── */
   .bg-oliva { background-color: var(--oliva) !important; }
+  .bg-areia\/25, .bg-areia\/30 { background-color: rgba(219,209,195,0.25) !important; }
+  .bg-white { background-color: #ffffff !important; }
+  .bg-white\/60 { background-color: rgba(255,255,255,0.8) !important; }
   /* Texto dentro de oliva fica branco */
   .bg-oliva, .bg-oliva * { color: white !important; }
   .bg-oliva .eyebrow,
