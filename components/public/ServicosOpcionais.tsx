@@ -19,18 +19,20 @@ export function ServicosOpcionais({ dados }: { dados: ServicosOpcionaisDados }) 
         )}
 
         <Reveal delay={0.2}>
-          <ul className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
+          <ul className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5">
             {dados.lista.map((servico) => {
               const Icon = iconForServico(servico);
               return (
                 <li
                   key={servico}
-                  className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/60 backdrop-blur-sm border border-areia/40"
+                  className="flex items-center gap-2.5 md:gap-3 px-3 md:px-5 py-3 md:py-4 rounded-2xl bg-white/60 backdrop-blur-sm border border-areia/40"
                 >
-                  <span className="w-10 h-10 rounded-full bg-oliva/10 text-oliva flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5" />
+                  <span className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-oliva/10 text-oliva flex items-center justify-center shrink-0">
+                    <Icon className="w-4 h-4 md:w-5 md:h-5" />
                   </span>
-                  <span className="font-serif text-carvao text-sm md:text-base">{servico}</span>
+                  <span className="font-serif text-carvao text-xs md:text-base leading-tight min-w-0 flex-1 break-words">
+                    {servico}
+                  </span>
                 </li>
               );
             })}

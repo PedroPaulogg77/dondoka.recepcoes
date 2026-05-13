@@ -144,7 +144,14 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
     ? `${process.env.NEXT_PUBLIC_APP_URL || ""}/orcamento/${orcamento.slug}`
     : null;
 
-  function copiarLink() {
+  function copiarUrl() {
+    if (!publicUrl) return;
+    navigator.clipboard.writeText(publicUrl);
+    setToast("Link do orçamento copiado!");
+    setTimeout(() => setToast(null), 2500);
+  }
+
+  function copiarMensagemWpp() {
     if (!publicUrl) return;
     const msg = `Olá, ${form.cliente_nome.split(" ")[0]}! Preparei sua proposta personalizada da Dondoka Recepções. ✨\n\nAcesse aqui: ${publicUrl}\n\nQualquer dúvida, é só chamar!`;
     navigator.clipboard.writeText(msg);
@@ -171,29 +178,55 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
               <div className="font-serif text-base md:text-lg text-white truncate">
                 {mode === "criar" ? "Novo orçamento" : form.cliente_nome || "Sem nome"}
               </div>
-              <div className="text-[10px] uppercase tracking-widest text-white/70 flex items-center gap-1.5">
+              <div className="text-[10px] uppercase tracking-widest text-white/85 flex items-center gap-1.5">
                 {dirty && (
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse" aria-hidden />
                 )}
-                {dirty ? "Mudanças não salvas" : mode === "criar" ? "Pronto pra criar" : "Tudo salvo"}
+                {dirty
+                  ? "Mudanças por publicar"
+                  : mode === "criar"
+                    ? "Pronto pra publicar"
+                    : "Publicado"}
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
             {publicUrl && (
-              <button
-                type="button"
-                onClick={copiarLink}
-                className="hidden sm:inline-flex items-center justify-center h-9 px-3 rounded-full text-xs text-white/90 hover:bg-white/15 transition"
-              >
-                Copiar p/ WhatsApp
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={copiarUrl}
+                  title="Copiar link do orçamento"
+                  aria-label="Copiar link do orçamento"
+                  className="inline-flex items-center justify-center gap-1.5 h-9 w-9 sm:w-auto sm:px-3 rounded-full text-xs text-white/95 hover:bg-white/15 transition"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                  </svg>
+                  <span className="hidden sm:inline">Copiar link</span>
+                </button>
+                <a
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Ver como cliente"
+                  aria-label="Ver como cliente"
+                  className="inline-flex items-center justify-center gap-1.5 h-9 w-9 sm:w-auto sm:px-3 rounded-full text-xs text-white/95 hover:bg-white/15 transition"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <span className="hidden sm:inline">Ver como cliente</span>
+                </a>
+              </>
             )}
             <button
               type="button"
               onClick={() => setModoClassico((v) => !v)}
-              className="hidden md:inline-flex items-center justify-center h-9 px-3 rounded-full text-xs text-white/90 hover:bg-white/15 transition"
+              className="hidden md:inline-flex items-center justify-center h-9 px-3 rounded-full text-xs text-white/95 hover:bg-white/15 transition"
             >
               {modoClassico ? "Modo visual" : "Modo formulário"}
             </button>
@@ -204,7 +237,7 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
               aria-label="Observações internas"
               className="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/15 transition"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
               </svg>
@@ -212,10 +245,19 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
             <button
               type="button"
               onClick={handleSave}
-              disabled={salvando || isPending || !dirty}
-              className="inline-flex items-center justify-center h-9 px-4 md:px-5 rounded-full bg-white text-oliva text-sm font-medium hover:bg-creme disabled:opacity-50 disabled:cursor-not-allowed transition"
+              disabled={salvando || isPending || (!dirty && mode === "editar")}
+              className="inline-flex items-center justify-center gap-1.5 h-9 px-4 md:px-5 rounded-full bg-white text-oliva text-sm font-semibold hover:bg-creme disabled:opacity-50 disabled:cursor-not-allowed transition shadow-soft"
             >
-              {salvando ? "Salvando..." : "Salvar"}
+              {salvando ? (
+                "Publicando..."
+              ) : (
+                <>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <path d="M5 12l5 5L20 7" />
+                  </svg>
+                  {mode === "criar" ? "Publicar" : dirty ? "Publicar alterações" : "Publicado"}
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -240,30 +282,32 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
           )}
           {mode === "editar" && !modoClassico && (
             <div className="flex flex-wrap gap-2 justify-center text-xs">
+              {publicUrl && (
+                <button
+                  type="button"
+                  onClick={copiarMensagemWpp}
+                  className="px-4 h-9 inline-flex items-center gap-1.5 rounded-full border border-oliva/40 text-oliva hover:bg-oliva hover:text-white transition"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347" />
+                  </svg>
+                  Copiar mensagem WhatsApp
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleDuplicate}
-                className="px-4 h-9 rounded-full border border-oliva/40 text-oliva hover:bg-oliva hover:text-white transition"
+                className="px-4 h-9 rounded-full border border-areia text-carvao/70 hover:border-carvao/40 hover:text-carvao transition"
               >
-                Duplicar
+                Duplicar orçamento
               </button>
               <button
                 type="button"
                 onClick={handleDelete}
-                className="px-4 h-9 rounded-full text-carvao/50 hover:text-rose-600 transition"
+                className="px-4 h-9 rounded-full text-carvao/40 hover:text-rose-600 transition"
               >
                 Excluir
               </button>
-              {publicUrl && (
-                <a
-                  href={publicUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-4 h-9 inline-flex items-center rounded-full text-oliva hover:text-bronze transition"
-                >
-                  Abrir link público ↗
-                </a>
-              )}
             </div>
           )}
         </div>
