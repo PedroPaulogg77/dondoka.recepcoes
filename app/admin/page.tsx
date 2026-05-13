@@ -3,6 +3,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/Button";
 import { brl, dataBR } from "@/lib/format";
 import type { Orcamento } from "@/types/orcamento";
+import { CriarExemploButton } from "@/components/admin/CriarExemploButton";
 
 export const dynamic = "force-dynamic";
 
@@ -37,9 +38,12 @@ export default async function AdminHome() {
             {orcamentos.length} {orcamentos.length === 1 ? "proposta" : "propostas"} cadastradas.
           </p>
         </div>
-        <Link href="/admin/novo">
-          <Button size="lg">+ Novo orçamento</Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          {orcamentos.length === 0 && <CriarExemploButton />}
+          <Link href="/admin/novo">
+            <Button size="lg">+ Novo orçamento</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="mt-10">
