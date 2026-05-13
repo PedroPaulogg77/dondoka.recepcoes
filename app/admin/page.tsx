@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { SetupBanner } from "@/components/admin/SetupBanner";
 import { OrcamentosList } from "@/components/admin/OrcamentosList";
 import { CriarExemploButton } from "@/components/admin/CriarExemploButton";
+import { GuiaUso } from "@/components/admin/GuiaUso";
 import type { Orcamento } from "@/types/orcamento";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +31,8 @@ export default async function AdminHome() {
             {orcamentos.length} {orcamentos.length === 1 ? "proposta" : "propostas"} cadastradas.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <GuiaUso />
           {orcamentos.length === 0 && <CriarExemploButton />}
           <Link href="/admin/novo">
             <Button size="lg">+ Novo orçamento</Button>

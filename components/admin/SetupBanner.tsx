@@ -72,11 +72,11 @@ export function SetupBanner({ config }: { config: ConfigGlobal | null }) {
             {checklist.map((item) => (
               <li key={item.label} className="flex items-center gap-2 text-sm">
                 {item.done ? (
-                  <svg viewBox="0 0 20 20" fill="currentColor" className="w-4.5 h-4.5 text-oliva flex-shrink-0">
+                  <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-oliva flex-shrink-0 inline-block">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                   </svg>
                 ) : (
-                  <span className="w-4.5 h-4.5 rounded-full border-2 border-carvao/20 flex-shrink-0" />
+                  <span className="w-4 h-4 rounded-full border-2 border-carvao/25 flex-shrink-0 inline-block" />
                 )}
                 <span className={item.done ? "text-carvao/50 line-through" : "text-carvao"}>
                   {item.label}
