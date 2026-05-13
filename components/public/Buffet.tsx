@@ -7,19 +7,19 @@ import type { BuffetDados } from "@/types/orcamento";
 export function Buffet({ dados }: { dados: BuffetDados }) {
   return (
     <section id="buffet" className="py-20 md:py-28 px-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <SectionTitle eyebrow="Buffet" title="O cardápio" />
 
-        <div className="mt-14 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+        <div className="mt-14 space-y-12 md:space-y-0 md:grid md:grid-cols-2 md:gap-16">
           {/* Entrada */}
           <Reveal>
-            <div>
-              <div className="flex items-center gap-3 text-oliva">
+            <div className="text-center md:text-left">
+              <div className="inline-flex items-center gap-3 text-oliva">
                 <IconTrayBell className="w-6 h-6" />
                 <span className="eyebrow text-bronze">Entrada</span>
               </div>
               <h3 className="mt-3 font-serif text-2xl text-carvao">{dados.entrada.titulo}</h3>
-              <ul className="mt-5 space-y-2">
+              <ul className="mt-5 space-y-2 inline-block text-left">
                 {dados.entrada.itens.map((item) => (
                   <li key={item} className="flex items-start gap-3 text-carvao/80">
                     <span className="text-oliva mt-1.5 text-[10px]">◆</span>
@@ -32,8 +32,8 @@ export function Buffet({ dados }: { dados: BuffetDados }) {
 
           {/* Prato principal */}
           <Reveal delay={0.1}>
-            <div>
-              <div className="flex items-center gap-3 text-oliva">
+            <div className="text-center md:text-left">
+              <div className="inline-flex items-center gap-3 text-oliva">
                 <IconChefHat className="w-6 h-6" />
                 <span className="eyebrow text-bronze">Prato principal</span>
               </div>
@@ -44,7 +44,7 @@ export function Buffet({ dados }: { dados: BuffetDados }) {
                       Opção {idx + 1}
                     </span>
                     <h4 className="mt-2 font-serif text-xl text-carvao">{op.titulo}</h4>
-                    <ul className="mt-3 space-y-1.5">
+                    <ul className="mt-3 space-y-1.5 inline-block text-left">
                       {op.itens.map((acomp) => (
                         <li key={acomp} className="flex items-start gap-3 text-carvao/75 text-sm">
                           <span className="text-oliva mt-1 text-[10px]">◆</span>

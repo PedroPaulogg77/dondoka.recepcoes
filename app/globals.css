@@ -258,6 +258,17 @@ html { scroll-behavior: smooth; }
   .bg-oliva .text-bronze { color: rgba(255,255,255,0.85) !important; }
 }
 
-/* Hide scrollbar on horizontal galleries */
+/* Hide scrollbar on horizontal galleries / carousels */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Floating buttons entrance animation */
+@keyframes float-up {
+  from { opacity: 0; transform: translateY(2rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.floating-entrance {
+  animation: float-up 0.6s ease 1.5s backwards;
+}
