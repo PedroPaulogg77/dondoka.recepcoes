@@ -1,38 +1,42 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-function hasSupabaseSession(request: NextRequest): boolean {
-  for (const name of request.cookies.getAll().map((c) => c.name)) {
-    if (name.startsWith("sb-") && name.includes("-auth-token")) {
-      return true;
-    }
-  }
-  return false;
-}
-
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const isAdminArea = pathname.startsWith("/admin");
-  const isLogin = pathname === "/admin/login";
+  try {
+    const { pathname } = request.nextUrl;
+    if (!pathname.startsWith("/admin")) {
+      return NextResponse.next();
+    }
 
-  const authenticated = hasSupabaseSession(request);
+    const isLogin = pathname === "/admin/login";
+    let authenticated = false;
+    try {
+      const cookies = request.cookies.getAll();
+      authenticated = cookies.some(
+        (c) => c.name.startsWith("sb-") && c.name.includes("-auth-token")
+      );
+    } catch {
+      authenticated = false;
+    }
 
-  if (isAdminArea && !isLogin && !authenticated) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
-    url.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(url);
+    if (!isLogin && !authenticated) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/login";
+      url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
+    }
+
+    if (isLogin && authenticated) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      return NextResponse.redirect(url);
+    }
+
+    return NextResponse.next();
+  } catch {
+    return NextResponse.next();
   }
-
-  if (isLogin && authenticated) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin";
-    url.searchParams.delete("redirect");
-    return NextResponse.redirect(url);
-  }
-
-  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|fotos|logos|patterns|.*\\.(?:png|jpg|jpeg|webp|svg|ico)).*)"],
+  matcher: ["/admin/:path*"],
 };
