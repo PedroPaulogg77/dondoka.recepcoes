@@ -92,10 +92,10 @@ export function ConfigForm({ config }: { config: ConfigGlobal }) {
           </p>
         </div>
         <SectionHelp title="Como funciona o aluguel por dia">
-          <p>Quando ativo, o sistema substitui a linha "Espaço" da proposta por uma vitrine com 3 faixas: Segunda a quinta, Sexta-feira, Sábado ou domingo.</p>
-          <p><b>Se a proposta tem data preenchida</b>: o cliente vê só a faixa daquele dia.</p>
-          <p><b>Se a proposta NÃO tem data</b>: o cliente vê as 3 faixas e o total considera fim de semana (mais conservador), com nota explicando que pode reduzir.</p>
-          <p>Itens extras (caução, taxa de limpeza) continuam na lista de "Outros itens do espaço" em cada orçamento.</p>
+          <p>Quando ativo, a seção "Espaço" da proposta vira uma vitrine com 3 faixas informativas: Segunda a quinta, Sexta-feira, Sábado ou domingo.</p>
+          <p><b>O cliente vê as 3 faixas</b> e escolhe o dia — o valor do dia escolhido ele soma mentalmente às demais categorias.</p>
+          <p><b>O aluguel não entra no total geral da proposta.</b> Só decoração, buffet e extras somam. Se a proposta tem data preenchida, a faixa daquele dia ganha destaque visual mas continua informativa.</p>
+          <p>Itens extras (caução, taxa de limpeza) continuam na lista de "Outros itens do espaço" em cada orçamento e somam normal.</p>
         </SectionHelp>
         <EspacoPrecosEditor
           value={form.precos_espaco_por_dia}

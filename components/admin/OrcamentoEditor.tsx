@@ -599,7 +599,6 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         precosEspaco={form.precos_espaco_por_dia}
         precosEspacoDefault={defaults.precosEspaco}
         onChangePrecosEspaco={(v) => update("precos_espaco_por_dia", v)}
-        clienteData={form.cliente_data}
         onUndo={undoDrawer}
       />
       <DrawerTexto

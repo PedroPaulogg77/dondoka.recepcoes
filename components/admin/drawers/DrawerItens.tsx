@@ -4,8 +4,7 @@ import { Drawer } from "../Drawer";
 import { ItensEditor } from "../ItensEditor";
 import { EspacoPrecosEditor } from "../EspacoPrecosEditor";
 import { brl } from "@/lib/format";
-import { valorAluguelEspaco, temFaixasAtivas } from "@/lib/orcamento-helpers";
-import { tierFromDate } from "@/lib/format";
+import { temFaixasAtivas } from "@/lib/orcamento-helpers";
 import type { ItemOrcamento, PrecosEspacoPorDia } from "@/types/orcamento";
 
 type Categoria = "espaco" | "decoracao" | "buffet";
@@ -24,8 +23,6 @@ type Props = {
   /** Faixas padrão do config global (pra "Restaurar padrão") */
   precosEspacoDefault: PrecosEspacoPorDia | null;
   onChangePrecosEspaco: (v: PrecosEspacoPorDia | null) => void;
-  /** Data do evento — afeta o subtotal exibido */
-  clienteData: string | null;
   onUndo?: () => void;
 };
 
@@ -45,22 +42,17 @@ export function DrawerItens({
   precosEspaco,
   precosEspacoDefault,
   onChangePrecosEspaco,
-  clienteData,
   onUndo,
 }: Props) {
   const [tab, setTab] = useState<Categoria>("espaco");
 
   const usarFaixas = temFaixasAtivas(precosEspaco);
-  const { valor: aluguel } = valorAluguelEspaco(precosEspaco, clienteData);
-  const temData = !!tierFromDate(clienteData);
-  // Só conta aluguel no total quando há data (igual ao público)
-  const aluguelNoTotal = usarFaixas && temData ? aluguel : 0;
-  // No tab Espaço, mostra subtotal sem aluguel quando não tem data (consistente com o total)
-  const subEspaco = aluguelNoTotal + subtotal(espaco);
+  // Aluguel das faixas NUNCA entra no total — cliente vê as 3 faixas
+  // e soma a do dia escolhido. Total geral = extras espaço + decoração + buffet.
+  const subEspaco = subtotal(espaco);
   const subDecoracao = subtotal(decoracao);
   const subBuffet = subtotal(buffet);
   const total = subEspaco + subDecoracao + subBuffet;
-  const totalParcial = usarFaixas && !temData;
 
   return (
     <Drawer
@@ -123,12 +115,14 @@ export function DrawerItens({
       {/* Total */}
       <div className="mt-6 px-5 py-4 rounded-2xl bg-oliva text-white">
         <div className="flex justify-between items-center">
-          <span className="eyebrow text-white/80">{totalParcial ? "Total parcial" : "Total geral"}</span>
+          <span className="eyebrow text-white/80">
+            {usarFaixas ? "Demais categorias" : "Total geral"}
+          </span>
           <span className="text-xl md:text-2xl font-serif tabular-nums">{brl(total)}</span>
         </div>
-        {totalParcial && (
+        {usarFaixas && (
           <p className="mt-2 text-xs text-white/75 leading-relaxed">
-            Sem data definida, o aluguel não entra no total. Cliente vê as 3 faixas e soma a do dia escolhido.
+            O aluguel do espaço aparece como informação (3 faixas) — não soma no total. O cliente vê os valores e escolhe o dia.
           </p>
         )}
       </div>

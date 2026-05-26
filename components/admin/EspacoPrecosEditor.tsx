@@ -76,8 +76,8 @@ export function EspacoPrecosEditor({
             )}
           </div>
           <p className="mt-1 text-xs text-carvao/60 leading-relaxed">
-            Quando você preencher a data do evento, o cliente vê só a faixa daquele dia.
-            Sem data, ele vê as 3 e o total usa fim de semana.
+            O cliente vê as 3 faixas como informação — escolhe o dia e soma o valor correspondente.
+            Esses valores não entram no total geral.
           </p>
         </div>
 

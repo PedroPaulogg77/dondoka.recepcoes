@@ -5,7 +5,7 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
 import { brl } from "@/lib/format";
 import type { ItemOrcamento, PrecosEspacoPorDia } from "@/types/orcamento";
-import { valorAluguelEspaco, temFaixasAtivas } from "@/lib/orcamento-helpers";
+import { temFaixasAtivas } from "@/lib/orcamento-helpers";
 import { EspacoFaixas } from "./EspacoFaixas";
 
 type Categoria = {
@@ -155,20 +155,18 @@ export function Investimento({
   clienteData?: string | null;
 }) {
   const usarFaixas = temFaixasAtivas(precosEspaco);
-  const { valor: aluguel, tierAtivo } = valorAluguelEspaco(precosEspaco, clienteData);
 
-  // Só inclui aluguel no total quando há data definida (cliente já escolheu o dia).
-  // Sem data, as 3 faixas são informativas e o total fecha apenas o restante.
-  const aluguelNoTotal = usarFaixas && tierAtivo ? aluguel : 0;
-  const subtotalEspaco = aluguelNoTotal + subtotal(espaco);
+  // Com faixas ativas, aluguel NUNCA entra no total — é sempre informativo.
+  // O cliente vê os 3 valores e mentalmente soma o do dia que escolher.
+  const subtotalEspaco = subtotal(espaco);
+  const totalSemAluguel = subtotalEspaco + subtotal(decoracao) + subtotal(buffet);
 
-  const total = subtotalEspaco + subtotal(decoracao) + subtotal(buffet);
-  if (total === 0 && !espaco.length && !decoracao.length && !buffet.length && !usarFaixas) {
+  if (totalSemAluguel === 0 && !espaco.length && !decoracao.length && !buffet.length && !usarFaixas) {
     return null;
   }
 
-  // Mostra "Valor total" como parcial quando há faixas mas sem data definida
-  const totalParcial = usarFaixas && !tierAtivo;
+  // Esconde a caixa "Valor total" quando faixas ativas E não há nada além de espaço pra somar
+  const escondeTotal = usarFaixas && totalSemAluguel === 0;
 
   return (
     <section id="investimento" className="py-20 md:py-28 px-6">
@@ -177,7 +175,7 @@ export function Investimento({
 
         <p className="mt-6 text-center text-sm text-carvao/55 max-w-md mx-auto">
           {usarFaixas
-            ? "O aluguel do espaço varia conforme o dia da semana. As demais categorias podem ser abertas para ver os itens inclusos."
+            ? "O aluguel do espaço varia conforme o dia da semana — você soma o valor do dia escolhido às demais categorias."
             : "Toque em cada categoria para ver os itens inclusos."}
         </p>
 
@@ -197,31 +195,33 @@ export function Investimento({
           <CategoryRow categoria={{ titulo: "Buffet", itens: buffet }} />
         </div>
 
-        <Reveal>
-          <div className="mt-12 relative overflow-hidden rounded-2xl bg-oliva p-8 md:p-12 shadow-premium">
-            <div className="absolute inset-0 pattern-claro opacity-10" aria-hidden />
-            <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-              <div>
-                <div className="eyebrow text-white/80">
-                  {totalParcial ? "Valor parcial" : "Valor total"}
+        {!escondeTotal && (
+          <Reveal>
+            <div className="mt-12 relative overflow-hidden rounded-2xl bg-oliva p-8 md:p-12 shadow-premium">
+              <div className="absolute inset-0 pattern-claro opacity-10" aria-hidden />
+              <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div>
+                  <div className="eyebrow text-white/80">
+                    {usarFaixas ? "Demais categorias" : "Valor total"}
+                  </div>
+                  <p className="mt-2 text-white/90 text-sm max-w-xs">
+                    {usarFaixas
+                      ? "Soma de decoração e buffet. O aluguel do espaço é informado acima e varia conforme o dia."
+                      : "Investimento completo para sua celebração no espaço Dondoka."}
+                  </p>
                 </div>
-                <p className="mt-2 text-white/90 text-sm max-w-xs">
-                  {totalParcial
-                    ? "Some o aluguel da faixa escolhida acima. O total fecha quando você confirma a data."
-                    : "Investimento completo para sua celebração no espaço Dondoka."}
-                </p>
+                <motion.div
+                  className="text-4xl md:text-5xl font-serif text-white"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                >
+                  <TotalCounter total={totalSemAluguel} />
+                </motion.div>
               </div>
-              <motion.div
-                className="text-4xl md:text-5xl font-serif text-white"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-              >
-                <TotalCounter total={total} />
-              </motion.div>
             </div>
-          </div>
-        </Reveal>
+          </Reveal>
+        )}
       </div>
     </section>
   );

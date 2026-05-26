@@ -15,7 +15,6 @@ import {
   buildInitialForm,
   normalizeForSave,
   resolveDefaults,
-  valorAluguelEspaco,
   temFaixasAtivas,
 } from "@/lib/orcamento-helpers";
 import {
@@ -71,19 +70,11 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
-  const { valor: aluguelEspaco, tierAtivo } = valorAluguelEspaco(
-    form.precos_espaco_por_dia,
-    form.cliente_data || null
-  );
   const usarFaixas = temFaixasAtivas(form.precos_espaco_por_dia);
-  // Sem data definida, aluguel não entra no total (igual ao público)
-  const aluguelNoTotal = usarFaixas && tierAtivo ? aluguelEspaco : 0;
-  const total =
-    aluguelNoTotal +
-    [form.itens_espaco, form.itens_decoracao, form.itens_buffet]
-      .flat()
-      .reduce((acc, i) => acc + (i.qtd || 0) * (i.valor_unitario || 0), 0);
-  const totalParcial = usarFaixas && !tierAtivo;
+  // Aluguel das faixas é só informativo — não entra no total.
+  const total = [form.itens_espaco, form.itens_decoracao, form.itens_buffet]
+    .flat()
+    .reduce((acc, i) => acc + (i.qtd || 0) * (i.valor_unitario || 0), 0);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -321,12 +312,14 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
         </div>
         <div className="mt-4 px-6 py-4 rounded-2xl bg-oliva text-white">
           <div className="flex justify-between items-center">
-            <span className="eyebrow text-white/70">{totalParcial ? "Total parcial" : "Total geral"}</span>
+            <span className="eyebrow text-white/70">
+              {usarFaixas ? "Demais categorias" : "Total geral"}
+            </span>
             <span className="text-2xl font-serif tabular-nums">{brl(total)}</span>
           </div>
-          {totalParcial && (
+          {usarFaixas && (
             <p className="mt-2 text-xs text-white/75 leading-relaxed">
-              Sem data definida, o aluguel não entra no total. O cliente vê as 3 faixas e soma a do dia escolhido.
+              O aluguel do espaço aparece como 3 faixas informativas — não soma no total. O cliente escolhe o dia e soma o valor da faixa correspondente.
             </p>
           )}
         </div>
