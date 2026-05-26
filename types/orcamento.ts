@@ -19,6 +19,19 @@ export type ItemOrcamento = {
   valor_unitario: number;
 };
 
+/**
+ * Faixas de preço do aluguel do espaço por dia da semana.
+ * Quando este campo está `null` (em Orcamento e ConfigGlobal), o sistema
+ * opera em modo legado: Espaço usa `itens_espaco` normal com setinha colapsável.
+ * Quando preenchido, o aluguel vira um item especial sem setinha, e a faixa
+ * exibida/cobrada depende de `cliente_data` (sem data → usa sáb-dom).
+ */
+export type PrecosEspacoPorDia = {
+  seg_qui: number | null;
+  sex: number | null;
+  sab_dom: number | null;
+};
+
 export type BuffetDados = {
   entrada: { titulo: string; itens: string[] };
   principal: { opcoes: Array<{ titulo: string; itens: string[] }> };
@@ -54,6 +67,8 @@ export type Orcamento = {
   itens_decoracao: ItemOrcamento[];
   itens_buffet: ItemOrcamento[];
 
+  precos_espaco_por_dia: PrecosEspacoPorDia | null;
+
   condicoes_pagamento: string | null;
   observacoes: string | null;
 
@@ -78,6 +93,7 @@ export type ConfigGlobal = {
   fotos_default: string[];
   buffet_dados: BuffetDados | null;
   servicos_opcionais_dados: ServicosOpcionaisDados | null;
+  precos_espaco_por_dia: PrecosEspacoPorDia | null;
   updated_at: string;
 };
 

@@ -6,11 +6,13 @@ import { FotosPicker } from "./FotosPicker";
 import { BuffetEditor } from "./BuffetEditor";
 import { ServicosEditor } from "./ServicosEditor";
 import { SectionHelp } from "./SectionHelp";
+import { EspacoPrecosEditor } from "./EspacoPrecosEditor";
 import {
   BUFFET_FALLBACK,
   SERVICOS_FALLBACK,
   type ConfigGlobal,
   type BuffetDados,
+  type PrecosEspacoPorDia,
   type ServicosOpcionaisDados,
 } from "@/types/orcamento";
 
@@ -30,6 +32,7 @@ export function ConfigForm({ config }: { config: ConfigGlobal }) {
     fotos_default: config.fotos_default || [],
     buffet_dados: (config.buffet_dados ?? BUFFET_FALLBACK) as BuffetDados,
     servicos_opcionais_dados: (config.servicos_opcionais_dados ?? SERVICOS_FALLBACK) as ServicosOpcionaisDados,
+    precos_espaco_por_dia: config.precos_espaco_por_dia as PrecosEspacoPorDia | null,
   });
 
   function up<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
@@ -77,6 +80,26 @@ export function ConfigForm({ config }: { config: ConfigGlobal }) {
           value={form.condicoes_pagamento}
           onChange={(v) => up("condicoes_pagamento", v)}
           rows={5}
+        />
+      </section>
+
+      <section className="bg-white border border-areia/60 rounded-2xl p-6 md:p-8 shadow-soft space-y-3">
+        <div>
+          <h2 className="font-serif text-xl text-carvao">Aluguel do espaço por dia da semana</h2>
+          <p className="mt-1 text-sm text-carvao/60">
+            Cobre valores diferentes pelo aluguel dependendo do dia. Esses 3 valores viram padrão
+            em todo orçamento novo. Você pode ajustar em cada orçamento individualmente.
+          </p>
+        </div>
+        <SectionHelp title="Como funciona o aluguel por dia">
+          <p>Quando ativo, o sistema substitui a linha "Espaço" da proposta por uma vitrine com 3 faixas: Segunda a quinta, Sexta-feira, Sábado ou domingo.</p>
+          <p><b>Se a proposta tem data preenchida</b>: o cliente vê só a faixa daquele dia.</p>
+          <p><b>Se a proposta NÃO tem data</b>: o cliente vê as 3 faixas e o total considera fim de semana (mais conservador), com nota explicando que pode reduzir.</p>
+          <p>Itens extras (caução, taxa de limpeza) continuam na lista de "Outros itens do espaço" em cada orçamento.</p>
+        </SectionHelp>
+        <EspacoPrecosEditor
+          value={form.precos_espaco_por_dia}
+          onChange={(v) => up("precos_espaco_por_dia", v)}
         />
       </section>
 

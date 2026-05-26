@@ -5,9 +5,11 @@ import {
   type BuffetDados,
   type ConfigGlobal,
   type Orcamento,
+  type PrecosEspacoPorDia,
   type SecoesVisiveis,
   type ServicosOpcionaisDados,
 } from "@/types/orcamento";
+import { tierFromDate, type TierDia } from "@/lib/format";
 
 /**
  * Defaults resolvidos a partir do config (aplicando fallbacks hardcoded
@@ -19,6 +21,7 @@ export type ResolvedDefaults = {
   pagamento: string;
   buffet: BuffetDados;
   servicos: ServicosOpcionaisDados;
+  precosEspaco: PrecosEspacoPorDia | null;
 };
 
 export function resolveDefaults(config: ConfigGlobal): ResolvedDefaults {
@@ -28,7 +31,47 @@ export function resolveDefaults(config: ConfigGlobal): ResolvedDefaults {
     pagamento: config.condicoes_pagamento || "",
     buffet: config.buffet_dados ?? BUFFET_FALLBACK,
     servicos: config.servicos_opcionais_dados ?? SERVICOS_FALLBACK,
+    precosEspaco: config.precos_espaco_por_dia ?? null,
   };
+}
+
+/**
+ * Decide quanto cobrar pelo aluguel do espaço com base nas faixas + data.
+ * - Sem faixas → retorna 0 (modo legado usa itens_espaco)
+ * - Sem nenhum valor preenchido → retorna 0
+ * - Com data válida + faixa preenchida → usa essa faixa
+ * - Sem data (ou faixa daquela data não preenchida) → fallback sáb-dom > sex > seg-qui
+ * Retorna `tierAtivo: null` quando não há data definida.
+ * Retorna `minValor` (menor faixa preenchida) pra mostrar nota "pode reduzir até R$X".
+ */
+export function valorAluguelEspaco(
+  precos: PrecosEspacoPorDia | null,
+  clienteData: string | null
+): { valor: number; tierAtivo: TierDia | null; minValor: number | null; maxValor: number | null } {
+  if (!precos) return { valor: 0, tierAtivo: null, minValor: null, maxValor: null };
+  const valoresValidos = [precos.seg_qui, precos.sex, precos.sab_dom]
+    .filter((v): v is number => typeof v === "number" && v > 0);
+  if (valoresValidos.length === 0) {
+    return { valor: 0, tierAtivo: null, minValor: null, maxValor: null };
+  }
+  const minValor = Math.min(...valoresValidos);
+  const maxValor = Math.max(...valoresValidos);
+  const tier = tierFromDate(clienteData);
+  if (tier && typeof precos[tier] === "number" && precos[tier]! > 0) {
+    return { valor: precos[tier]!, tierAtivo: tier, minValor, maxValor };
+  }
+  const fallback = precos.sab_dom ?? precos.sex ?? precos.seg_qui ?? 0;
+  return { valor: fallback || 0, tierAtivo: null, minValor, maxValor };
+}
+
+/** Verifica se as faixas têm pelo menos um valor preenchido (ou seja, estão ativas). */
+export function temFaixasAtivas(precos: PrecosEspacoPorDia | null): boolean {
+  if (!precos) return false;
+  return (
+    (typeof precos.seg_qui === "number" && precos.seg_qui > 0) ||
+    (typeof precos.sex === "number" && precos.sex > 0) ||
+    (typeof precos.sab_dom === "number" && precos.sab_dom > 0)
+  );
 }
 
 /**
@@ -61,6 +104,7 @@ export type FormState = {
   itens_espaco: Orcamento["itens_espaco"];
   itens_decoracao: Orcamento["itens_decoracao"];
   itens_buffet: Orcamento["itens_buffet"];
+  precos_espaco_por_dia: PrecosEspacoPorDia | null;
   condicoes_pagamento: string;
   observacoes: string;
   buffet_dados: BuffetDados;
@@ -92,6 +136,7 @@ export function buildVirtualOrcamento(
     itens_espaco: form.itens_espaco,
     itens_decoracao: form.itens_decoracao,
     itens_buffet: form.itens_buffet,
+    precos_espaco_por_dia: form.precos_espaco_por_dia,
     condicoes_pagamento: form.condicoes_pagamento || null,
     observacoes: form.observacoes || null,
     buffet_dados: form.buffet_dados,
@@ -134,6 +179,9 @@ export function normalizeForSave(form: FormState, defaults: ResolvedDefaults) {
     servicos_opcionais_dados: deepEqual(form.servicos_opcionais_dados, defaults.servicos)
       ? null
       : form.servicos_opcionais_dados,
+    precos_espaco_por_dia: deepEqual(form.precos_espaco_por_dia, defaults.precosEspaco)
+      ? null
+      : form.precos_espaco_por_dia,
   };
 }
 
@@ -162,6 +210,7 @@ export function buildInitialForm(
     itens_espaco: orcamento?.itens_espaco || [],
     itens_decoracao: orcamento?.itens_decoracao || [],
     itens_buffet: orcamento?.itens_buffet || [],
+    precos_espaco_por_dia: orcamento?.precos_espaco_por_dia ?? defaults.precosEspaco,
     condicoes_pagamento: orcamento?.condicoes_pagamento ?? defaults.pagamento,
     observacoes: orcamento?.observacoes ?? "",
     buffet_dados: orcamento?.buffet_dados ?? defaults.buffet,

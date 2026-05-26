@@ -4,7 +4,9 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
 import { brl } from "@/lib/format";
-import type { ItemOrcamento } from "@/types/orcamento";
+import type { ItemOrcamento, PrecosEspacoPorDia } from "@/types/orcamento";
+import { valorAluguelEspaco, temFaixasAtivas } from "@/lib/orcamento-helpers";
+import { EspacoFaixas } from "./EspacoFaixas";
 
 type Categoria = {
   titulo: string;
@@ -143,13 +145,31 @@ export function Investimento({
   espaco,
   decoracao,
   buffet,
+  precosEspaco = null,
+  clienteData = null,
 }: {
   espaco: ItemOrcamento[];
   decoracao: ItemOrcamento[];
   buffet: ItemOrcamento[];
+  precosEspaco?: PrecosEspacoPorDia | null;
+  clienteData?: string | null;
 }) {
-  const total = subtotal(espaco) + subtotal(decoracao) + subtotal(buffet);
-  if (total === 0 && !espaco.length && !decoracao.length && !buffet.length) return null;
+  const usarFaixas = temFaixasAtivas(precosEspaco);
+  const { valor: aluguel, tierAtivo, minValor } = valorAluguelEspaco(precosEspaco, clienteData);
+
+  const subtotalEspaco = usarFaixas
+    ? aluguel + subtotal(espaco)
+    : subtotal(espaco);
+
+  const total = subtotalEspaco + subtotal(decoracao) + subtotal(buffet);
+  if (total === 0 && !espaco.length && !decoracao.length && !buffet.length && !usarFaixas) {
+    return null;
+  }
+
+  // Diferença que pode ser economizada se cliente escolher dia mais barato
+  const economiaMax = usarFaixas && !tierAtivo && minValor != null && minValor < aluguel
+    ? aluguel - minValor
+    : 0;
 
   return (
     <section id="investimento" className="py-20 md:py-28 px-6">
@@ -157,11 +177,23 @@ export function Investimento({
         <SectionTitle eyebrow="Investimento" title="Resumo da proposta" />
 
         <p className="mt-6 text-center text-sm text-carvao/55 max-w-md mx-auto">
-          Toque em cada categoria para ver os itens inclusos.
+          {usarFaixas
+            ? "O aluguel do espaço varia conforme o dia da semana. As demais categorias podem ser abertas para ver os itens inclusos."
+            : "Toque em cada categoria para ver os itens inclusos."}
         </p>
 
         <div className="mt-10 border-t border-areia/60">
-          <CategoryRow categoria={{ titulo: "Espaço", itens: espaco }} />
+          {usarFaixas && precosEspaco ? (
+            <>
+              <EspacoFaixas precos={precosEspaco} clienteData={clienteData} />
+              {/* Itens extras de Espaço (caução, taxas) — colapsáveis */}
+              {espaco.length > 0 && (
+                <CategoryRow categoria={{ titulo: "Outros itens do espaço", itens: espaco }} />
+              )}
+            </>
+          ) : (
+            <CategoryRow categoria={{ titulo: "Espaço", itens: espaco }} />
+          )}
           <CategoryRow categoria={{ titulo: "Decoração", itens: decoracao }} />
           <CategoryRow categoria={{ titulo: "Buffet", itens: buffet }} />
         </div>
@@ -175,6 +207,13 @@ export function Investimento({
                 <p className="mt-2 text-white/90 text-sm max-w-xs">
                   Investimento completo para sua celebração no espaço Dondoka.
                 </p>
+                {economiaMax > 0 && (
+                  <p className="mt-3 text-white/80 text-xs leading-relaxed max-w-sm">
+                    <span className="opacity-80">Valor considera fim de semana.</span>{" "}
+                    Pode reduzir até <span className="font-semibold text-white">{brl(economiaMax)}</span>{" "}
+                    em dias de semana.
+                  </p>
+                )}
               </div>
               <motion.div
                 className="text-4xl md:text-5xl font-serif text-white"

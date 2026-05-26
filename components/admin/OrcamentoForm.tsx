@@ -14,6 +14,7 @@ import {
   buildInitialForm,
   normalizeForSave,
   resolveDefaults,
+  valorAluguelEspaco,
 } from "@/lib/orcamento-helpers";
 import {
   type Orcamento,
@@ -67,7 +68,9 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
+  const aluguelEspaco = valorAluguelEspaco(form.precos_espaco_por_dia, form.cliente_data || null).valor;
   const total =
+    aluguelEspaco +
     [form.itens_espaco, form.itens_decoracao, form.itens_buffet]
       .flat()
       .reduce((acc, i) => acc + (i.qtd || 0) * (i.valor_unitario || 0), 0);

@@ -67,6 +67,7 @@ export async function POST() {
     observacoes: "Orçamento de exemplo — duplique este e edite para criar um real.",
     buffet_dados: null,
     servicos_opcionais_dados: null,
+    precos_espaco_por_dia: null,
   };
 
   const base = generateSlugCandidates(exemplo.cliente_nome, exemplo.cliente_evento);

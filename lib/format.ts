@@ -37,6 +37,37 @@ export function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+/* ===== Faixas de preço por dia da semana ===== */
+
+export type TierDia = "seg_qui" | "sex" | "sab_dom";
+
+export const TIER_LABELS: Record<TierDia, string> = {
+  seg_qui: "Segunda a quinta",
+  sex: "Sexta-feira",
+  sab_dom: "Sábado ou domingo",
+};
+
+export const TIER_LABELS_CURTO: Record<TierDia, string> = {
+  seg_qui: "Seg–Qui",
+  sex: "Sex",
+  sab_dom: "Sáb/Dom",
+};
+
+/**
+ * Mapeia uma data ISO (YYYY-MM-DD) para a faixa de preço correspondente.
+ * Usa T12:00:00 pra evitar bugs de fuso horário negativo.
+ * Retorna `null` quando não há data.
+ */
+export function tierFromDate(isoDate: string | null | undefined): TierDia | null {
+  if (!isoDate) return null;
+  const d = new Date(`${isoDate}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  const dow = d.getDay(); // 0=dom, 1=seg ... 5=sex, 6=sáb
+  if (dow === 5) return "sex";
+  if (dow === 0 || dow === 6) return "sab_dom";
+  return "seg_qui";
+}
+
 export function tempoRelativo(date: string): string {
   const now = Date.now();
   const then = new Date(date).getTime();

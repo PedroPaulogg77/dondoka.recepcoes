@@ -2,8 +2,10 @@
 import { useState } from "react";
 import { Drawer } from "../Drawer";
 import { ItensEditor } from "../ItensEditor";
+import { EspacoPrecosEditor } from "../EspacoPrecosEditor";
 import { brl } from "@/lib/format";
-import type { ItemOrcamento } from "@/types/orcamento";
+import { valorAluguelEspaco, temFaixasAtivas } from "@/lib/orcamento-helpers";
+import type { ItemOrcamento, PrecosEspacoPorDia } from "@/types/orcamento";
 
 type Categoria = "espaco" | "decoracao" | "buffet";
 
@@ -16,6 +18,13 @@ type Props = {
   onChangeEspaco: (v: ItemOrcamento[]) => void;
   onChangeDecoracao: (v: ItemOrcamento[]) => void;
   onChangeBuffet: (v: ItemOrcamento[]) => void;
+  /** Faixas por dia (override do orçamento) */
+  precosEspaco: PrecosEspacoPorDia | null;
+  /** Faixas padrão do config global (pra "Restaurar padrão") */
+  precosEspacoDefault: PrecosEspacoPorDia | null;
+  onChangePrecosEspaco: (v: PrecosEspacoPorDia | null) => void;
+  /** Data do evento — afeta o subtotal exibido */
+  clienteData: string | null;
   onUndo?: () => void;
 };
 
@@ -32,11 +41,20 @@ export function DrawerItens({
   onChangeEspaco,
   onChangeDecoracao,
   onChangeBuffet,
+  precosEspaco,
+  precosEspacoDefault,
+  onChangePrecosEspaco,
+  clienteData,
   onUndo,
 }: Props) {
   const [tab, setTab] = useState<Categoria>("espaco");
 
-  const total = subtotal(espaco) + subtotal(decoracao) + subtotal(buffet);
+  const usarFaixas = temFaixasAtivas(precosEspaco);
+  const { valor: aluguel } = valorAluguelEspaco(precosEspaco, clienteData);
+  const subEspaco = (usarFaixas ? aluguel : 0) + subtotal(espaco);
+  const subDecoracao = subtotal(decoracao);
+  const subBuffet = subtotal(buffet);
+  const total = subEspaco + subDecoracao + subBuffet;
 
   return (
     <Drawer
@@ -50,13 +68,12 @@ export function DrawerItens({
       <div className="-mt-1 mb-5 grid grid-cols-3 gap-1 p-1 rounded-full bg-areia/40">
         {(
           [
-            { key: "espaco" as const, label: "Espaço", itens: espaco },
-            { key: "decoracao" as const, label: "Decoração", itens: decoracao },
-            { key: "buffet" as const, label: "Buffet", itens: buffet },
+            { key: "espaco" as const, label: "Espaço", sub: subEspaco },
+            { key: "decoracao" as const, label: "Decoração", sub: subDecoracao },
+            { key: "buffet" as const, label: "Buffet", sub: subBuffet },
           ]
         ).map((t) => {
           const active = tab === t.key;
-          const sub = subtotal(t.itens);
           return (
             <button
               key={t.key}
@@ -68,7 +85,7 @@ export function DrawerItens({
             >
               <span>{t.label}</span>
               <span className={`text-[10px] mt-0.5 tabular-nums ${active ? "text-bronze" : "text-carvao/45"}`}>
-                {brl(sub)}
+                {brl(t.sub)}
               </span>
             </button>
           );
@@ -76,7 +93,19 @@ export function DrawerItens({
       </div>
 
       {tab === "espaco" && (
-        <ItensEditor titulo="Espaço" itens={espaco} onChange={onChangeEspaco} />
+        <div className="space-y-5">
+          <EspacoPrecosEditor
+            value={precosEspaco}
+            onChange={onChangePrecosEspaco}
+            showResetVsDefault
+            defaultValue={precosEspacoDefault}
+          />
+          <ItensEditor
+            titulo={usarFaixas ? "Outros itens do espaço (caução, extras)" : "Espaço"}
+            itens={espaco}
+            onChange={onChangeEspaco}
+          />
+        </div>
       )}
       {tab === "decoracao" && (
         <ItensEditor titulo="Decoração" itens={decoracao} onChange={onChangeDecoracao} />

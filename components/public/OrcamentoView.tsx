@@ -55,6 +55,7 @@ export function OrcamentoView({ orcamento, config, editorMode }: Props) {
 
   const buffetDados = orcamento.buffet_dados ?? config.buffet_dados ?? BUFFET_FALLBACK;
   const servicosDados = orcamento.servicos_opcionais_dados ?? config.servicos_opcionais_dados ?? SERVICOS_FALLBACK;
+  const precosEspaco = orcamento.precos_espaco_por_dia ?? config.precos_espaco_por_dia ?? null;
 
   const mensagemWpp = `Olá! Acabei de ver a proposta da Dondoka Recepções e gostaria de conversar. (Proposta: ${process.env.NEXT_PUBLIC_APP_URL}/orcamento/${orcamento.slug})`;
 
@@ -105,6 +106,8 @@ export function OrcamentoView({ orcamento, config, editorMode }: Props) {
               espaco={orcamento.itens_espaco}
               decoracao={orcamento.itens_decoracao}
               buffet={orcamento.itens_buffet}
+              precosEspaco={precosEspaco}
+              clienteData={orcamento.cliente_data}
             />
           )
         }
