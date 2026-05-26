@@ -155,21 +155,20 @@ export function Investimento({
   clienteData?: string | null;
 }) {
   const usarFaixas = temFaixasAtivas(precosEspaco);
-  const { valor: aluguel, tierAtivo, minValor } = valorAluguelEspaco(precosEspaco, clienteData);
+  const { valor: aluguel, tierAtivo } = valorAluguelEspaco(precosEspaco, clienteData);
 
-  const subtotalEspaco = usarFaixas
-    ? aluguel + subtotal(espaco)
-    : subtotal(espaco);
+  // Só inclui aluguel no total quando há data definida (cliente já escolheu o dia).
+  // Sem data, as 3 faixas são informativas e o total fecha apenas o restante.
+  const aluguelNoTotal = usarFaixas && tierAtivo ? aluguel : 0;
+  const subtotalEspaco = aluguelNoTotal + subtotal(espaco);
 
   const total = subtotalEspaco + subtotal(decoracao) + subtotal(buffet);
   if (total === 0 && !espaco.length && !decoracao.length && !buffet.length && !usarFaixas) {
     return null;
   }
 
-  // Diferença que pode ser economizada se cliente escolher dia mais barato
-  const economiaMax = usarFaixas && !tierAtivo && minValor != null && minValor < aluguel
-    ? aluguel - minValor
-    : 0;
+  // Mostra "Valor total" como parcial quando há faixas mas sem data definida
+  const totalParcial = usarFaixas && !tierAtivo;
 
   return (
     <section id="investimento" className="py-20 md:py-28 px-6">
@@ -203,17 +202,14 @@ export function Investimento({
             <div className="absolute inset-0 pattern-claro opacity-10" aria-hidden />
             <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div>
-                <div className="eyebrow text-white/80">Valor total</div>
+                <div className="eyebrow text-white/80">
+                  {totalParcial ? "Valor parcial" : "Valor total"}
+                </div>
                 <p className="mt-2 text-white/90 text-sm max-w-xs">
-                  Investimento completo para sua celebração no espaço Dondoka.
+                  {totalParcial
+                    ? "Some o aluguel da faixa escolhida acima. O total fecha quando você confirma a data."
+                    : "Investimento completo para sua celebração no espaço Dondoka."}
                 </p>
-                {economiaMax > 0 && (
-                  <p className="mt-3 text-white/80 text-xs leading-relaxed max-w-sm">
-                    <span className="opacity-80">Valor considera fim de semana.</span>{" "}
-                    Pode reduzir até <span className="font-semibold text-white">{brl(economiaMax)}</span>{" "}
-                    em dias de semana.
-                  </p>
-                )}
               </div>
               <motion.div
                 className="text-4xl md:text-5xl font-serif text-white"

@@ -5,6 +5,7 @@ import { ItensEditor } from "../ItensEditor";
 import { EspacoPrecosEditor } from "../EspacoPrecosEditor";
 import { brl } from "@/lib/format";
 import { valorAluguelEspaco, temFaixasAtivas } from "@/lib/orcamento-helpers";
+import { tierFromDate } from "@/lib/format";
 import type { ItemOrcamento, PrecosEspacoPorDia } from "@/types/orcamento";
 
 type Categoria = "espaco" | "decoracao" | "buffet";
@@ -51,10 +52,15 @@ export function DrawerItens({
 
   const usarFaixas = temFaixasAtivas(precosEspaco);
   const { valor: aluguel } = valorAluguelEspaco(precosEspaco, clienteData);
-  const subEspaco = (usarFaixas ? aluguel : 0) + subtotal(espaco);
+  const temData = !!tierFromDate(clienteData);
+  // Só conta aluguel no total quando há data (igual ao público)
+  const aluguelNoTotal = usarFaixas && temData ? aluguel : 0;
+  // No tab Espaço, mostra subtotal sem aluguel quando não tem data (consistente com o total)
+  const subEspaco = aluguelNoTotal + subtotal(espaco);
   const subDecoracao = subtotal(decoracao);
   const subBuffet = subtotal(buffet);
   const total = subEspaco + subDecoracao + subBuffet;
+  const totalParcial = usarFaixas && !temData;
 
   return (
     <Drawer
@@ -115,9 +121,16 @@ export function DrawerItens({
       )}
 
       {/* Total */}
-      <div className="mt-6 px-5 py-4 rounded-2xl bg-oliva text-white flex justify-between items-center">
-        <span className="eyebrow text-white/80">Total geral</span>
-        <span className="text-xl md:text-2xl font-serif tabular-nums">{brl(total)}</span>
+      <div className="mt-6 px-5 py-4 rounded-2xl bg-oliva text-white">
+        <div className="flex justify-between items-center">
+          <span className="eyebrow text-white/80">{totalParcial ? "Total parcial" : "Total geral"}</span>
+          <span className="text-xl md:text-2xl font-serif tabular-nums">{brl(total)}</span>
+        </div>
+        {totalParcial && (
+          <p className="mt-2 text-xs text-white/75 leading-relaxed">
+            Sem data definida, o aluguel não entra no total. Cliente vê as 3 faixas e soma a do dia escolhido.
+          </p>
+        )}
       </div>
     </Drawer>
   );
