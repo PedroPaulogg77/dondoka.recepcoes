@@ -9,12 +9,14 @@ import { EditableTextField } from "./EditableTextField";
 import { BuffetEditor } from "./BuffetEditor";
 import { ServicosEditor } from "./ServicosEditor";
 import { SectionHelp } from "./SectionHelp";
+import { EspacoPrecosEditor } from "./EspacoPrecosEditor";
 import { brl } from "@/lib/format";
 import {
   buildInitialForm,
   normalizeForSave,
   resolveDefaults,
   valorAluguelEspaco,
+  temFaixasAtivas,
 } from "@/lib/orcamento-helpers";
 import {
   type Orcamento,
@@ -61,6 +63,7 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
   const defaultPagamento = defaults.pagamento;
   const defaultBuffet = defaults.buffet;
   const defaultServicos = defaults.servicos;
+  const defaultPrecosEspaco = defaults.precosEspaco;
 
   const [form, setForm] = useState(() => buildInitialForm(config, orcamento));
 
@@ -287,8 +290,14 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
           <p>Os 3 grupos (Espaço, Decoração, Buffet) aparecem na seção <b>Resumo da proposta</b> da página pública, agora colapsáveis — o cliente clica pra ver os itens.</p>
         </SectionHelp>
         <div className="space-y-4 mt-4">
+          <EspacoPrecosEditor
+            value={form.precos_espaco_por_dia}
+            onChange={(v) => up("precos_espaco_por_dia", v)}
+            showResetVsDefault
+            defaultValue={defaultPrecosEspaco}
+          />
           <ItensEditor
-            titulo="Espaço"
+            titulo={temFaixasAtivas(form.precos_espaco_por_dia) ? "Outros itens do espaço (caução, extras)" : "Espaço"}
             itens={form.itens_espaco}
             onChange={(v) => up("itens_espaco", v)}
           />
