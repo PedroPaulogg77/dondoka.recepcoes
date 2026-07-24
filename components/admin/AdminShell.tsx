@@ -7,8 +7,9 @@ import { cn } from "@/lib/format";
 import { GuiaUso } from "./GuiaUso";
 
 const NAV = [
-  { href: "/admin", label: "Orçamentos" },
-  { href: "/admin/configuracoes", label: "Configurações" },
+  { href: "/admin", label: "Orçamentos", curto: "Propostas" },
+  { href: "/admin/leads", label: "Leads", curto: "Leads" },
+  { href: "/admin/configuracoes", label: "Configurações", curto: "Config" },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -31,7 +32,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           {/* Logo — shrink-0 para não ser comprimido pelos itens do nav */}
           <Link href="/admin" className="flex items-center gap-2.5 shrink-0">
             <Image
-              src="/logos/icone-1.png"
+              src="/logos/icone-1.webp"
               alt="Dondoka"
               width={32}
               height={32}
@@ -54,9 +55,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   )}
                 >
                   {/* Label curto no mobile, completo no desktop */}
-                  <span className="sm:hidden">
-                    {n.href === "/admin" ? "Propostas" : "Config"}
-                  </span>
+                  <span className="sm:hidden">{n.curto}</span>
                   <span className="hidden sm:inline">{n.label}</span>
                 </Link>
               );
