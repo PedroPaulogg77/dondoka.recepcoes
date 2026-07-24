@@ -107,14 +107,19 @@ h1, h2, h3, h4 {
   opacity: 0.4;
 }
 
+/* O pattern aparece no rodapé de todas as páginas, então o peso dele é
+   cobrado em cada visita. O JPG original tinha 3368px e 382 KB, servido cru
+   porque background-image não passa pelo next/image. Em WebP a 1920px são
+   10 KB — e como a textura é usada com 10% a 50% de opacidade, a diferença
+   não aparece na tela. Regenerar com: npm run otimizar-patterns */
 .pattern-claro {
-  background-image: url("/patterns/pattern-claro.jpg");
+  background-image: url("/patterns/pattern-claro.webp");
   background-size: cover;
   background-position: center;
   background-blend-mode: soft-light;
 }
 .pattern-escuro {
-  background-image: url("/patterns/pattern-escuro.jpg");
+  background-image: url("/patterns/pattern-escuro.webp");
   background-size: cover;
   background-position: center;
 }
