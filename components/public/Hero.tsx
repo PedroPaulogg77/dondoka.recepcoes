@@ -18,10 +18,10 @@ export function Hero({ orcamento }: { orcamento: Orcamento }) {
           transition={{ duration: 1, ease: "easeOut" }}
         >
           <Image
-            src="/logos/logo-1.png"
+            src="/logos/logo-1.webp"
             alt="Dondoka Recepções"
-            width={2381}
-            height={676}
+            width={1200}
+            height={341}
             priority
             quality={95}
             sizes="(max-width: 640px) 80vw, (max-width: 768px) 480px, 640px"

@@ -45,7 +45,7 @@ function LoginForm() {
         className="relative w-full max-w-sm bg-white border border-areia/60 rounded-2xl p-8 md:p-10 shadow-premium"
       >
         <Image
-          src="/logos/logo-1.png"
+          src="/logos/logo-1.webp"
           alt="Dondoka"
           width={120}
           height={120}

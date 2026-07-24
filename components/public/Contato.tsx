@@ -39,11 +39,12 @@ export function Contato({ config }: { config: ConfigGlobal }) {
       <div className="relative max-w-4xl mx-auto text-center">
         <Reveal>
           <Image
-            src="/logos/icone-1.png"
+            src="/logos/icone-1.webp"
             alt=""
-            width={1656}
-            height={2050}
+            width={727}
+            height={900}
             quality={95}
+            sizes="80px"
             className="mx-auto h-20 w-auto brightness-0 invert opacity-95"
           />
           <p className="eyebrow mt-8 text-white/85">Obrigado pela escolha</p>

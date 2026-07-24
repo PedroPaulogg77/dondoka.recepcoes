@@ -1,8 +1,33 @@
-# Dondoka Recepções — Sistema de Orçamentos
+# Dondoka Recepções
 
-Web app para a Dondoka enviar propostas personalizadas via WhatsApp.
-Cada cliente recebe um link único, mobile-first, com a apresentação visual da marca
-e opção de baixar PDF.
+Três coisas no mesmo projeto Next.js e no mesmo deploy:
+
+1. **Site institucional** (`/`, `/o-espaco`, `/buffet`, `/eventos/*`, `/galeria`,
+   `/perguntas-frequentes`, `/contato`, `/guias/*`) — público, estático, otimizado
+   para busca no Google e para citação por assistentes de IA.
+2. **Sistema de propostas** (`/admin` + `/orcamento/[slug]`) — cada cliente recebe
+   um link único, mobile-first, com opção de baixar PDF.
+3. **Bio-link do Instagram** (`/links`).
+
+## ⚠️ URLs que não podem cair
+
+Existem **cartões de visita impressos** com QR Code apontando para
+`dondokarecepcoes.vercel.app/links`, e propostas já enviadas a clientes pelo
+WhatsApp em `dondokarecepcoes.vercel.app/orcamento/[slug]`. Material impresso não
+se recolhe, e mensagem de WhatsApp não se reescreve.
+
+Portanto:
+
+- **Nunca renomear o projeto na Vercel** — o domínio `.vercel.app` deriva do nome
+  do projeto. Renomear quebra o QR de todos os cartões, de forma irreversível.
+- **Nunca remover o domínio `.vercel.app`** da lista de domínios do projeto, mesmo
+  depois que `dondokarecepcoes.com.br` estiver ativo. Adicionar domínio próprio
+  não desliga o `.vercel.app`.
+- **Nunca renomear as rotas `/links` e `/orcamento/[slug]`.**
+- Todo material novo impresso deve usar `dondokarecepcoes.com.br/links`.
+
+Depois de qualquer deploy que toque em `middleware.ts`, roteamento ou domínios:
+abrir `dondokarecepcoes.vercel.app/links` e escanear um cartão físico.
 
 ## Stack
 - Next.js 14 (App Router) + TypeScript + Tailwind CSS
@@ -59,38 +84,87 @@ npm run dev
 
 ```
 app/
-  page.tsx                    landing institucional
-  orcamento/[slug]/page.tsx   proposta pública (1 por cliente)
-  admin/                      painel (protegido por auth)
-    login/                    tela de login
-    page.tsx                  lista de orçamentos
-    novo/                     criar
-    [id]/                     editar
-    configuracoes/            defaults globais
+  (site)/                     SITE INSTITUCIONAL — route group com header/footer próprios
+    layout.tsx                header + footer + JSON-LD do negócio
+    page.tsx                  home
+    o-espaco/ buffet/ galeria/ perguntas-frequentes/ contato/
+    eventos/[slug]/           4 páginas estáticas (generateStaticParams)
+    guias/ guias/[slug]/      índice + guias estáticos
+    opengraph-image.tsx       imagem de compartilhamento gerada no deploy
+  orcamento/[slug]/page.tsx   proposta pública (1 por cliente) — noindex
+  links/page.tsx              bio-link do Instagram — noindex, rota permanente
+  admin/                      painel (protegido por auth) — noindex
+    login/ page.tsx novo/ [id]/ configuracoes/
+    leads/                    leads vindos do formulário do site
   api/admin/                  rotas autenticadas (CRUD)
+  api/leads/                  recebe o formulário público (zod + honeypot + rate limit)
+  sitemap.ts robots.ts        SEO técnico
 components/
-  public/                     Hero, Sobre, Galeria, Decoração, Investimento, Pagamento, Contato
+  site/                       SiteHeader, SiteFooter, HeroSite, VideoTour,
+                              FAQAccordion, GaleriaGrid, FormOrcamento, CTASection
+  public/                     Hero, Sobre, Galeria, Investimento, Pagamento, Contato (proposta)
   admin/                      Form, ItensEditor, FotosPicker, ConfigForm, AdminShell
-  ui/                         Button, Reveal, SectionTitle, ScrollProgress
+  ui/                         Button, Reveal, SectionTitle, Icons, ScrollProgress
+content/                      COPY DO SITE — versionada, sem banco
+  espaco.ts                   diferenciais, fotos, vídeos, FAQ geral
+  eventos.ts                  conteúdo das 4 páginas de tipo de evento
+  guias.ts                    os guias (adicionar objeto = publicar guia)
 lib/
-  supabase/                   clients
-  format.ts                   brl, dataExtenso, slugify
-  slug.ts                     unicidade de slug
-  auth-guard.ts               proteção das API routes
-  queries.ts                  fetch de orçamento + config
+  site-config.ts              NAP canônico (nome, endereço, telefone) — fonte única
+  schema.tsx                  JSON-LD: EventVenue, FAQPage, VideoObject, Article…
+  supabase/ format.ts slug.ts auth-guard.ts queries.ts
 public/
-  logos/                      logo-1..6, icone-1..5, logo-tagline-1..5
-  patterns/                   pattern-claro.jpg, pattern-escuro.jpg
-  fotos/                      16 fotos do espaço (WebP otimizado)
-supabase/migrations/0001_init.sql
+  logos/ patterns/
+  fotos/                      19 fotos do espaço (WebP otimizado)
+  video/                      tour.mp4, evento.mp4, decor-loop.mp4 + posters
+  llms.txt                    resumo da marca para crawlers de IA
+supabase/migrations/          0001_init … 0004_leads
 middleware.ts                 protege /admin/*
 ```
+
+### Onde mexer para cada coisa
+
+| Quero… | Arquivo |
+|---|---|
+| Trocar telefone, endereço, Instagram | `lib/site-config.ts` (muda em todo lugar de uma vez) |
+| Editar texto de uma página de evento | `content/eventos.ts` |
+| Publicar um guia novo | adicionar objeto em `content/guias.ts` |
+| Adicionar/remover pergunta da FAQ | `content/espaco.ts` |
+| Trocar foto de uma seção | `content/espaco.ts` → `FOTOS` |
 
 ## Comandos úteis
 
 - `npm run dev` — desenvolvimento (porta 3000 padrão)
-- `npm run build` — build de produção
-- `npm run convert-fotos` — reconverter HEICs originais para WebP
+- `npm run build` — build de produção. **Não rodar com o `dev` ligado**: os dois
+  escrevem no mesmo `.next` e corrompem os chunks. Se acontecer, `rm -rf .next`.
+- `npm run convert-fotos` — converter HEICs originais para WebP
+- `npm run otimizar-fotos` — reduzir fotos grandes já em `public/fotos/` e
+  padronizar o nome em minúsculo (a Vercel roda Linux, onde a URL diferencia
+  maiúscula de minúscula)
+
+### Performance de imagem
+
+Quatro decisões medidas, todas em `next.config.mjs`:
+
+| Decisão | Porquê |
+|---|---|
+| **WebP, sem AVIF** | Codificar AVIF leva ~3s por variante contra ~0,45s do WebP, e economiza só 5% de peso. Como a otimização acontece sob demanda na primeira vez que alguém pede aquele tamanho, os 3s viram "imagem demorando pra carregar" na tela do visitante. |
+| **`deviceSizes` sem 2048 e 3840** | O site nunca usa essas larguras. Cada uma seria uma transformação a mais gerada e cobrada. |
+| **`Cache-Control: immutable`** em `/fotos`, `/video`, `/logos`, `/patterns` | Esses arquivos não mudam. Para trocar algum, troque o nome do arquivo em vez de sobrescrever. |
+| **Patterns em WebP** | O `pattern-claro.jpg` tinha 382 KB e aparece no rodapé de toda página, servido cru porque `background-image` não passa pelo `next/image`. Em WebP a 1920px são 10 KB. |
+
+**Sempre defina `sizes`** em imagem com `fill` ou logo. Sem ele o navegador baixa a maior variante do `srcset`: o logo do header chegou a vir em 3840px de largura para ser exibido a 40px.
+
+**Placeholders de desfoque**: o componente [`components/site/Foto.tsx`](components/site/Foto.tsx) embute uma miniatura borrada de ~200 bytes no HTML, então a área da foto nunca fica vazia. Use `<Foto>` no lugar de `<Image>` para fotos do acervo. Depois de adicionar fotos novas, rode `npm run gerar-blur`.
+
+### Vídeos
+
+Os `.mov` originais ficam fora do git (`.gitignore`). O que vai a produção é o
+transcodificado em `public/video/`, ~8 MB cada em 720×1280:
+
+```bash
+ffmpeg -i "entrada.mov" -vf "scale=-2:1280" -c:v libx264 -crf 28 -preset slow -pix_fmt yuv420p -movflags +faststart -c:a aac -b:a 96k "public/video/tour.mp4"
+```
 
 ## Identidade visual
 

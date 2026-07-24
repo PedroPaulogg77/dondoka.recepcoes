@@ -176,7 +176,7 @@ export function LinksPage({ config }: { config: ConfigGlobal }) {
         <Reveal>
           <div className="text-center">
             <Image
-              src="/logos/logo-1.png"
+              src="/logos/logo-1.webp"
               alt="Dondoka Recepções"
               width={260}
               height={260}
