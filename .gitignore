@@ -9,3 +9,8 @@ node_modules
 .claude/
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+
+# Vídeos originais (centenas de MB) — o que vai pra produção é o
+# transcodificado em public/video/. Ver Fase 0 do plano.
+*.mov
+*.MOV

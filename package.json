@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "convert-fotos": "node scripts/convert-fotos.mjs"
+    "convert-fotos": "node scripts/convert-fotos.mjs",
+    "otimizar-fotos": "node scripts/otimizar-fotos.mjs",
+    "gerar-blur": "node scripts/gerar-blur.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
