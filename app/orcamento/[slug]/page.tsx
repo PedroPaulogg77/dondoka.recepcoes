@@ -8,15 +8,29 @@ export const revalidate = 0;
 
 type Props = { params: { slug: string } };
 
+/**
+ * Cada proposta traz o nome de um cliente real e os valores negociados com ele.
+ * Isso nunca pode virar resultado de busca — daí o `noindex, nofollow` em todos
+ * os casos, inclusive no de proposta não encontrada.
+ */
+const PRIVADO: Metadata["robots"] = {
+  index: false,
+  follow: false,
+  nocache: true,
+  googleBot: { index: false, follow: false },
+};
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { orcamento } = await fetchOrcamentoBySlug(params.slug);
-  if (!orcamento) return { title: "Proposta — Dondoka Recepções" };
-  if (!orcamento.publicado) return { title: "Proposta em preparação — Dondoka Recepções" };
+  if (!orcamento) return { title: "Proposta — Dondoka Recepções", robots: PRIVADO };
+  if (!orcamento.publicado)
+    return { title: "Proposta em preparação — Dondoka Recepções", robots: PRIVADO };
   return {
     title: `Proposta para ${orcamento.cliente_nome} — Dondoka Recepções`,
     description: `Proposta personalizada para ${orcamento.cliente_nome}${
       orcamento.cliente_evento ? ` — ${orcamento.cliente_evento}` : ""
     }.`,
+    robots: PRIVADO,
   };
 }
 
@@ -28,7 +42,7 @@ export default async function OrcamentoPage({ params }: Props) {
     return (
       <div className="min-h-screen bg-creme flex flex-col items-center justify-center px-6 text-center">
         <Image
-          src="/logos/logo-1.png"
+          src="/logos/logo-1.webp"
           alt="Dondoka Recepções"
           width={180}
           height={80}

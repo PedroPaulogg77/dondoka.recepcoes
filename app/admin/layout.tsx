@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/AdminShell";
+
+/** Painel interno — fora de qualquer índice de busca. */
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
+};
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return <AdminShell>{children}</AdminShell>;

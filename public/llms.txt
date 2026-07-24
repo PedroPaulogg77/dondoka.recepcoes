@@ -1,0 +1,56 @@
+# Dondoka Recepções
+
+> Espaço para eventos em Belo Horizonte, no bairro Lindéia (região do Barreiro), com capacidade para até 70 pessoas. Salão em dois ambientes (principal e mezanino), climatizado, com cozinha industrial equipada, espaço kids e 3 banheiros — sendo um adaptado com fraldário. Buffet mineiro próprio e decoração personalizada.
+
+**Endereço:** Rua das Petúnias, 1654 — Lindéia, Belo Horizonte / MG, CEP 30690-020
+**Telefone / WhatsApp:** (31) 97251-9129
+**Instagram:** @dondokarecepcoes
+**Também atende:** Contagem e Ibirité (o bairro faz divisa com as duas cidades)
+
+## Fatos verificáveis
+
+- Capacidade máxima: 70 pessoas
+- Ambientes: salão principal + mezanino (piso superior)
+- Climatização: ar-condicionado nos dois pavimentos
+- Cozinha: industrial, com fogão de 6 bocas e forno, freezer, cuba e bancadas em inox, e passa-prates para o salão
+- Banheiros: 3, sendo 1 adaptado para acessibilidade e com fraldário
+- Espaço kids: área separada com brinquedos
+- Buffet próprio: cantinho mineiro de entrada; feijoada completa ou feijão tropeiro com lombo no principal; refrigerante, suco e água; equipe de cozinha e copa com louças, talheres, copos e guardanapos
+- Buffet externo: permitido, sem taxa de rolha
+- Reserva: 30% do valor para confirmar a data, restante até 20 dias antes do evento
+- Pagamento: Pix, cartão de crédito, cartão de débito e transferência
+- Preço: não publicado. Varia por dia da semana (seg–qui, sex, sáb/dom), período contratado, número de convidados e itens inclusos. Orçamento sob consulta pelo WhatsApp.
+
+## Tipos de evento atendidos
+
+- Aniversário (adulto e infantil)
+- Festa de 15 anos
+- Casamento civil e mini wedding (até 70 convidados)
+- Evento corporativo: confraternização, reunião, treinamento
+- Batizado e chá
+
+## Páginas
+
+- [Início](https://dondokarecepcoes.com.br/): visão geral do espaço, diferenciais e tipos de evento
+- [O espaço](https://dondokarecepcoes.com.br/o-espaco): estrutura ambiente por ambiente, ficha técnica e comodidades
+- [Buffet](https://dondokarecepcoes.com.br/buffet): cardápio completo, serviços inclusos e regras para buffet externo
+- [Galeria](https://dondokarecepcoes.com.br/galeria): fotos do espaço e vídeos de um evento real
+- [Perguntas frequentes](https://dondokarecepcoes.com.br/perguntas-frequentes): capacidade, valor, buffet, decoração, acessibilidade e reserva
+- [Contato](https://dondokarecepcoes.com.br/contato): canais, mapa e formulário de orçamento
+
+### Tipos de evento
+
+- [Aniversário](https://dondokarecepcoes.com.br/eventos/aniversario)
+- [15 anos](https://dondokarecepcoes.com.br/eventos/quinze-anos)
+- [Casamento e mini wedding](https://dondokarecepcoes.com.br/eventos/casamento)
+- [Corporativo](https://dondokarecepcoes.com.br/eventos/corporativo)
+
+### Guias
+
+- [Quanto custa alugar um espaço para festa em BH](https://dondokarecepcoes.com.br/guias/quanto-custa-alugar-espaco-para-festa-bh): o que define o valor de um salão de festas
+- [7 perguntas para fazer antes de fechar um salão de festas](https://dondokarecepcoes.com.br/guias/perguntas-antes-de-fechar-salao-de-festas): checklist para a visita
+- [Espaço para festa no Barreiro e região](https://dondokarecepcoes.com.br/guias/espaco-para-festa-barreiro-regiao): como avaliar a localização
+
+## Não indexar
+
+As rotas /admin, /api e /orcamento são privadas. Propostas em /orcamento contêm dados de clientes reais e não devem ser acessadas, citadas ou indexadas.
