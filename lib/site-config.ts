@@ -56,27 +56,34 @@ export const SITE = {
   },
 
   /**
-   * ── PENDENTE DE CONFIRMAÇÃO COM O CLIENTE ──────────────────────────────
-   * Estes dois campos entram no JSON-LD e aparecem para o usuário. Dado
-   * errado aqui é pior que dado ausente: quebra a confiança de quem chega
-   * pelo Google e conflita com o Google Business Profile.
-   *
-   * Enquanto forem `null`, o schema simplesmente omite o campo e o site não
-   * exibe a informação. Nada quebra — só fica incompleto.
+   * Coordenadas do pino no Google Maps — vieram direto da própria página do
+   * local (parâmetros `3d`/`4d` da URL do Google Business Profile), não de um
+   * clique manual no mapa. É a fonte mais confiável: bate exatamente com o
+   * que o Google já usa internamente para esse endereço.
    */
-  /** Coordenadas exatas da porta. Pegar no Google Maps, botão direito → copiar. */
-  geo: null as { latitude: number; longitude: number } | null,
-  /** Ex.: [{ dias: ["Sa", "Su"], abre: "11:00", fecha: "23:00" }] */
+  geo: { latitude: -19.9798824, longitude: -44.0552887 } as { latitude: number; longitude: number } | null,
+
+  /**
+   * ── PENDENTE DE CONFIRMAÇÃO COM O CLIENTE ──────────────────────────────
+   * Horário de funcionamento — até que horas o evento pode ir. Ex.:
+   * [{ dias: ["Sa", "Su"], abre: "11:00", fecha: "23:00" }]
+   * Enquanto for `null`, o schema simplesmente omite o campo.
+   */
   horarios: null as Array<{ dias: string[]; abre: string; fecha: string }> | null,
 
   /**
    * Perfis oficiais da marca em outros lugares da web — vira `sameAs` no
    * schema e é o que conecta site, Instagram e Google Business Profile como
-   * uma coisa só aos olhos de quem indexa. Adicionar a URL do GBP e de cada
-   * diretório assim que forem criados (Fase 7).
+   * uma coisa só aos olhos do Google e das IAs.
+   *
+   * O link do Maps usa o formato `?cid=`, construído a partir do Place ID do
+   * negócio. É permanente — ao contrário de um link curto (`share.google/…`
+   * ou `maps.app.goo.gl/…`), que é só um redirecionador e pode ser reciclado
+   * pelo Google com o tempo.
    */
   perfis: [
     "https://instagram.com/dondokarecepcoes",
+    "https://maps.google.com/?cid=15967989551749459951",
   ],
 } as const;
 
