@@ -44,12 +44,12 @@ export const GUIAS: Guia[] = [
     titulo: "Quanto custa alugar um espaço para festa em BH",
     title: "Quanto custa alugar um espaço para festa em BH: o que muda no valor",
     description:
-      "O que realmente define o preço de um salão de festas em Belo Horizonte: dia da semana, período, número de convidados e o que está incluso. Guia da Dondoka Recepções.",
+      "O que realmente define o preço de um salão de festas em Belo Horizonte: dia da semana, período, número de convidados e o que está incluso. Guia da Dondoka Recepções, onde a locação tem valor fixo.",
     resumo:
       "Não existe preço único para alugar um espaço de festa em BH. E desconfie de quem responde com um número antes de perguntar a data. Quatro variáveis definem quase todo o valor: o dia da semana, o período contratado, o número de convidados e o que já vem incluso no pacote.",
     publicadoEm: "2026-07-23",
     atualizadoEm: "2026-07-23",
-    foto: FOTOS.salaoMesas,
+    foto: FOTOS.mezanino,
     fotoAlt: "Salão da Dondoka Recepções com mesas redondas montadas para um evento",
     blocos: [
       {
@@ -66,7 +66,12 @@ export const GUIAS: Guia[] = [
       {
         tipo: "p",
         texto:
-          "Aqui na Dondoka trabalhamos com três faixas: segunda a quinta, sexta-feira, e sábado ou domingo. Se a sua data tem flexibilidade, essa é de longe a decisão que mais mexe no orçamento final. Aniversário de criança numa sexta à tarde, confraternização de empresa numa quinta. São movimentos que economizam de verdade.",
+          "Se a sua data tem flexibilidade, essa costuma ser a decisão que mais mexe no orçamento final. Aniversário de criança numa sexta à tarde, confraternização de empresa numa quinta. Em boa parte das casas, são movimentos que economizam de verdade.",
+      },
+      {
+        tipo: "destaque",
+        texto:
+          "Na Dondoka funciona diferente: a locação do espaço tem valor fixo, igual para qualquer dia. Sábado ou terça, você paga o mesmo. Preferimos assim porque evita a conversa de remarcar a festa para caber no orçamento.",
       },
       { tipo: "h2", texto: "2. O período contratado" },
       {
@@ -133,6 +138,11 @@ export const GUIAS: Guia[] = [
         tipo: "p",
         texto:
           "O que fazemos é responder rápido e com o valor fechado. Você manda a data, o tipo de evento e quantas pessoas espera; a gente devolve quanto custa, com o que está incluso escrito. Se não couber no seu orçamento, você descobre em minutos e sem constrangimento.",
+      },
+      {
+        tipo: "p",
+        texto:
+          "Uma coisa a gente já adianta: a locação do espaço tem valor fixo, sem variação por dia da semana. O que muda de um orçamento para outro é o que você contrata além do espaço.",
       },
     ],
   },
@@ -247,7 +257,7 @@ export const GUIAS: Guia[] = [
       {
         tipo: "p",
         texto:
-          "Quando você escolhe um espaço, está escolhendo também quanto cada convidado vai dirigir. E isso tem efeito real na festa: quem mora longe chega atrasado, sai mais cedo, ou simplesmente não vai.",
+          "Quando você escolhe um espaço, está escolhendo também quanto cada convidado vai dirigir. E isso tem efeito real na festa: quem mora longe chega atrasado, sai mais cedo, ou nem aparece.",
       },
       {
         tipo: "p",

@@ -52,6 +52,28 @@ const nextConfig = {
   reactStrictMode: true,
 
   /**
+   * As quatro páginas de tipo de evento viraram seções da /eventos (jul/2026,
+   * a pedido da Camila). O 301 preserva qualquer link que já exista por aí e
+   * transfere para a nova página o pouco de indexação acumulado.
+   *
+   * A âncora leva direto à seção correspondente, então quem clicava num link
+   * antigo continua caindo no conteúdo certo.
+   */
+  async redirects() {
+    const tipos = [
+      ["aniversario", "aniversario"],
+      ["quinze-anos", "quinze-anos"],
+      ["casamento", "casamento"],
+      ["corporativo", "corporativo"],
+    ];
+    return tipos.map(([slug, ancora]) => ({
+      source: `/eventos/${slug}`,
+      destination: `/eventos#${ancora}`,
+      permanent: true,
+    }));
+  },
+
+  /**
    * Os arquivos de /_next/static já vêm com hash no nome e cache longo por
    * padrão. Quem fica de fora é tudo que está em /public — justamente as
    * fotos e os vídeos, os arquivos mais pesados do site.

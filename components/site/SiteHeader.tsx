@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/format";
-import { NAV, NAV_EVENTOS, whatsappUrl } from "@/lib/site-config";
+import { NAV, whatsappUrl } from "@/lib/site-config";
 
 function IconMenu({ className }: { className?: string }) {
   return (
@@ -23,18 +23,9 @@ function IconClose({ className }: { className?: string }) {
   );
 }
 
-function IconChevron({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-
 export function SiteHeader() {
   const [rolou, setRolou] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
-  const [eventosAberto, setEventosAberto] = useState(false);
   const pathname = usePathname();
   const reduz = useReducedMotion();
 
@@ -62,7 +53,6 @@ export function SiteHeader() {
   // página nova no mobile.
   useEffect(() => {
     setMenuAberto(false);
-    setEventosAberto(false);
   }, [pathname]);
 
   // Trava o scroll do body enquanto o drawer está aberto.
@@ -121,56 +111,6 @@ export function SiteHeader() {
 
           {/* Navegação desktop */}
           <nav className="hidden lg:flex items-center gap-1" aria-label="Navegação principal">
-            <div
-              className="relative"
-              onMouseEnter={() => setEventosAberto(true)}
-              onMouseLeave={() => setEventosAberto(false)}
-            >
-              <button
-                type="button"
-                onClick={() => setEventosAberto((v) => !v)}
-                aria-expanded={eventosAberto}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-2 text-sm rounded-full transition",
-                  sobreHero
-                    ? "text-white/90 hover:text-white"
-                    : pathname.startsWith("/eventos")
-                      ? "text-oliva"
-                      : "text-carvao/70 hover:text-oliva"
-                )}
-              >
-                Tipos de evento
-                <IconChevron className={cn("w-3.5 h-3.5 transition-transform", eventosAberto && "rotate-180")} />
-              </button>
-
-              <AnimatePresence>
-                {eventosAberto && (
-                  <motion.div
-                    initial={{ opacity: 0, y: reduz ? 0 : 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: reduz ? 0 : 8 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute left-0 top-full pt-2 w-64"
-                  >
-                    <div className="rounded-2xl bg-white border border-areia/60 shadow-premium p-2">
-                      {NAV_EVENTOS.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={cn(
-                            "block px-3 py-2.5 rounded-xl text-sm transition",
-                            ativo(item.href) ? "bg-oliva/10 text-oliva" : "text-carvao/75 hover:bg-areia/30 hover:text-oliva"
-                          )}
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
             {NAV.map((item) => (
               <Link
                 key={item.href}
@@ -253,24 +193,6 @@ export function SiteHeader() {
               </div>
 
               <div className="flex-1 px-5 py-6">
-                <p className="eyebrow">Tipos de evento</p>
-                <div className="mt-3 space-y-1">
-                  {NAV_EVENTOS.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={cn(
-                        "block py-2.5 font-serif text-lg transition",
-                        ativo(item.href) ? "text-oliva" : "text-carvao hover:text-oliva"
-                      )}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-
-                <div className="my-6 h-px bg-areia/60" />
-
                 <div className="space-y-1">
                   {NAV.map((item) => (
                     <Link

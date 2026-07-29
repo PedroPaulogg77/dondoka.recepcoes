@@ -12,7 +12,7 @@ import { JsonLd, schemaBreadcrumb, schemaVideo } from "@/lib/schema";
 export const metadata: Metadata = {
   title: "Fotos e vídeo do espaço | Dondoka Recepções",
   description:
-    "Galeria da Dondoka Recepções: fotos do salão, do mezanino, da cozinha equipada, do espaço kids e da fachada, além do vídeo de um evento real realizado no espaço.",
+    "Galeria da Dondoka Recepções: fotos de eventos reais realizados no espaço, do salão, do mezanino, da cozinha e da fachada, além do vídeo de um casamento civil.",
   alternates: { canonical: urlAbsoluta("/galeria") },
 };
 
@@ -44,9 +44,9 @@ export default function GaleriaPage() {
 
       <HeroSite
         eyebrow="Galeria"
-        titulo="Conheça o"
-        destaque="espaço"
-        subtitulo="Fotos do salão, do mezanino, da cozinha, do espaço kids e da fachada, mais o vídeo de um casamento civil que aconteceu aqui."
+        titulo="A Dondoka em"
+        destaque="momentos reais"
+        subtitulo="Fotos de eventos que aconteceram aqui e do espaço em si, mais o vídeo de um casamento civil realizado na casa."
         foto={FOTOS.fachadaNoite}
         fotoAlt="Fachada iluminada da Dondoka Recepções à noite"
         ctaSecundario={{ href: "/contato", label: "Agendar uma visita" }}

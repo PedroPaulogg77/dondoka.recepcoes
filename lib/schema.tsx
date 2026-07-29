@@ -74,10 +74,13 @@ export function schemaNegocio(): Json {
     image: GALERIA_COMPLETA.slice(0, 6).map((f) => urlAbsoluta(f)),
     logo: urlAbsoluta("/logos/logo-1.webp"),
     sameAs: SITE.perfis,
+    // Só o que a casa tem hoje. Espaço kids saiu daqui em jul/2026: a área
+    // ainda não está pronta, e declarar comodidade inexistente em dado
+    // estruturado é pior que omitir — é o Google e as IAs repetindo a
+    // informação errada por conta própria.
     amenityFeature: [
       { nome: "Ar-condicionado", valor: true },
       { nome: "Cozinha equipada", valor: true },
-      { nome: "Espaço kids", valor: true },
       { nome: "Banheiro acessível", valor: true },
       { nome: "Fraldário", valor: true },
       { nome: "Mezanino", valor: true },

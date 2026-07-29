@@ -3,36 +3,35 @@ import { Foto } from "@/components/site/Foto";
 import type { Metadata } from "next";
 import { HeroSite } from "@/components/site/HeroSite";
 import { CTASection } from "@/components/site/CTASection";
+import { CarrosselFotos } from "@/components/site/CarrosselFotos";
 import { VideoTour } from "@/components/site/VideoTour";
 import { FAQAccordion } from "@/components/site/FAQAccordion";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
 import {
   IconCapacidade,
+  IconAmbientes,
   IconClimatizado,
   IconCozinha,
-  IconKids,
   IconBanheiros,
-  IconSparkle,
 } from "@/components/ui/Icons";
-import { DIFERENCIAIS, FAQ_GERAL, FOTOS, TIPOS_EVENTO, VIDEOS } from "@/content/espaco";
+import { CARROSSEL_HOME, DIFERENCIAIS, FAQ_GERAL, FOTOS, TIPOS_EVENTO, VIDEOS } from "@/content/espaco";
 import { SITE, urlAbsoluta } from "@/lib/site-config";
 import { JsonLd, schemaFAQ, schemaVideo } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "Dondoka Recepções: espaço para eventos em BH | Lindéia, Barreiro",
+  title: "Espaço para eventos em Belo Horizonte | Dondoka Recepções",
   description:
-    "Espaço para eventos em Belo Horizonte com capacidade para até 70 pessoas: salão em dois ambientes, climatizado, cozinha equipada, espaço kids e buffet mineiro. No Lindéia, Barreiro.",
+    "Espaço para eventos de até 70 convidados em Belo Horizonte, no Lindéia (Barreiro). Dois ambientes, climatizado e com cozinha equipada. Solicite seu orçamento.",
   alternates: { canonical: urlAbsoluta("/") },
 };
 
 const ICONES = {
   capacidade: IconCapacidade,
+  ambientes: IconAmbientes,
   climatizado: IconClimatizado,
   cozinha: IconCozinha,
-  kids: IconKids,
   banheiros: IconBanheiros,
-  decoracao: IconSparkle,
 } as const;
 
 export default function HomePage() {
@@ -58,14 +57,49 @@ export default function HomePage() {
 
       <HeroSite
         altura="alto"
-        eyebrow="Espaço para eventos em Belo Horizonte"
-        titulo="Celebre o"
-        destaque="essencial"
-        subtitulo="Um espaço para até 70 pessoas no Lindéia, em BH: salão em dois ambientes, climatizado, com cozinha equipada, espaço kids e buffet mineiro feito na casa."
-        foto={FOTOS.salaoMezanino}
-        fotoAlt="Salão principal da Dondoka Recepções montado para um evento, com mezanino ao fundo e parede verde oliva"
+        eyebrow="Dondoka Recepções"
+        titulo="Um espaço para celebrar"
+        destaque="momentos especiais"
+        subtitulo="Espaço para eventos de até 70 convidados em Belo Horizonte, no bairro Lindéia."
+        foto={FOTOS.mezaninoEscada}
+        fotoAlt="Salão da Dondoka Recepções visto da escada, com o mezanino no piso superior"
         ctaSecundario={{ href: "/o-espaco", label: "Conhecer o espaço" }}
       />
+
+      {/* ── Vídeo ────────────────────────────────────────────────────────
+          Logo depois do hero, de propósito: é o material mais forte que a casa
+          tem. Um evento real, com gente dentro, convence mais rápido que
+          qualquer foto de espaço vazio. Fundo escuro para o vídeo virar o
+          ponto de atenção da seção. */}
+      <section className="relative overflow-hidden bg-carvao px-6 py-20 text-white md:py-28">
+        <div className="absolute inset-0 pattern-claro opacity-[0.06]" aria-hidden />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2 md:gap-16">
+          <Reveal>
+            <p className="eyebrow text-areia">Um evento de verdade</p>
+            <h2 className="mt-3 text-3xl leading-tight text-white md:text-4xl">
+              <span className="font-light italic text-areia">Veja</span> a casa em movimento
+            </h2>
+            <p className="mt-5 text-white/80">
+              Este é um casamento civil que aconteceu aqui, gravado do lado de fora até a mesa de doces
+              montada. Sem render e sem foto de banco de imagens.
+            </p>
+            <p className="mt-4 text-white/80">
+              A casa com gente dentro, no dia da festa. Ver assim conta mais que qualquer descrição nossa.
+            </p>
+            <Link
+              href="/o-espaco"
+              className="mt-7 inline-flex items-center gap-2 text-sm text-areia transition hover:gap-3 hover:text-white"
+            >
+              Conhecer a estrutura
+              <span aria-hidden>→</span>
+            </Link>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <VideoTour {...VIDEOS.tour} prioridade />
+          </Reveal>
+        </div>
+      </section>
 
       {/* ── Diferenciais ─────────────────────────────────────────────── */}
       <section className="px-6 py-20 md:py-28">
@@ -76,11 +110,18 @@ export default function HomePage() {
             subtitle="Sem contratar estrutura por fora e sem surpresa no dia."
           />
 
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Flex em vez de grid: são 5 itens, e numa grade de 3 colunas a
+              última linha ficaria com um buraco à direita. Com flex-wrap e
+              justify-center, as duas últimas centralizam sozinhas. */}
+          <div className="mt-14 flex flex-wrap justify-center gap-6">
             {DIFERENCIAIS.map((item, i) => {
               const Icone = ICONES[item.icone];
               return (
-                <Reveal key={item.titulo} delay={i * 0.06}>
+                <Reveal
+                  key={item.titulo}
+                  delay={i * 0.06}
+                  className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
+                >
                   <div className="group h-full rounded-2xl border border-areia/60 bg-white p-7 shadow-soft transition-all hover:-translate-y-1 hover:shadow-premium">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-areia/40 text-oliva transition group-hover:bg-oliva group-hover:text-white">
                       <Icone className="h-6 w-6" />
@@ -95,63 +136,69 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Vídeo ────────────────────────────────────────────────────── */}
-      <section className="bg-areia/25 px-6 py-20 md:py-28">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2 md:gap-16">
-          <Reveal>
-            <p className="eyebrow">Um evento de verdade</p>
-            <h2 className="mt-3 text-3xl leading-tight md:text-4xl">
-              <span className="font-light italic text-bronze">Veja</span> a casa em movimento
-            </h2>
-            <p className="mt-5 text-carvao/75">
-              Este é um casamento civil que aconteceu aqui, gravado do lado de fora até a mesa de doces
-              montada. Sem render e sem foto de banco de imagens.
-            </p>
-            <p className="mt-4 text-carvao/75">
-              A casa com gente dentro, no dia da festa. Ver assim conta mais que qualquer descrição nossa.
-            </p>
+      {/* ── Carrossel do espaço ──────────────────────────────────────────
+          A Camila pediu prioridade para as fotos, e a home não mostrava
+          nenhuma além do hero. O carrossel fica em largura total de propósito:
+          sangrando até a borda, as fotos ganham o peso visual que uma grade
+          contida não daria. */}
+      <section className="bg-areia/25 py-20 md:py-28">
+        <div className="mx-auto mb-12 max-w-6xl px-6">
+          <SectionTitle
+            eyebrow="O espaço"
+            title="A Dondoka em momentos reais"
+            subtitle="Fotos da casa e de eventos que aconteceram aqui."
+          />
+        </div>
+
+        <Reveal>
+          <CarrosselFotos slides={CARROSSEL_HOME} />
+        </Reveal>
+
+        <Reveal>
+          <div className="mt-10 text-center">
             <Link
               href="/galeria"
-              className="mt-7 inline-flex items-center gap-2 text-sm text-oliva transition hover:gap-3 hover:text-bronze"
+              className="inline-flex items-center gap-2 text-sm text-oliva transition-all hover:gap-3 hover:text-bronze"
             >
-              Ver galeria completa
+              Ver a galeria completa
               <span aria-hidden>→</span>
             </Link>
-          </Reveal>
-
-          <Reveal delay={0.1}>
-            <VideoTour {...VIDEOS.tour} />
-          </Reveal>
-        </div>
+          </div>
+        </Reveal>
       </section>
 
-      {/* ── Tipos de evento ──────────────────────────────────────────── */}
+      {/* ── Tipos de evento ──────────────────────────────────────────────
+          Lista de texto, sem foto. Antes eram seis cards grandes com imagem,
+          e as imagens não representavam o tipo (workshops com foto do
+          mezanino vazio, chás com uma mesa de doces qualquer). Sem ilustrar
+          nada, a foto só roubava espaço das fotos do espaço, que é o que
+          precisa aparecer. Cada item leva à seção correspondente em /eventos. */}
       <section className="px-6 py-20 md:py-28">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-4xl">
           <SectionTitle
-            eyebrow="Para o seu momento"
-            title="Que evento você vai fazer?"
-            subtitle="Cada tipo de festa usa o espaço de um jeito. Veja como o seu se encaixa."
+            eyebrow="Eventos"
+            title="Momentos que merecem ser celebrados"
+            subtitle="O espaço recebe celebrações de até 70 convidados."
           />
 
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 divide-y divide-areia/70 border-y border-areia/70">
             {TIPOS_EVENTO.map((tipo, i) => (
-              <Reveal key={tipo.href} delay={i * 0.07}>
+              <Reveal key={tipo.id} delay={i * 0.04}>
                 <Link
-                  href={tipo.href}
-                  className="group relative block h-72 overflow-hidden rounded-2xl bg-areia shadow-soft transition-shadow hover:shadow-premium"
+                  href={`/eventos#${tipo.id}`}
+                  className="group flex items-baseline justify-between gap-6 py-5 transition-colors hover:text-oliva"
                 >
-                  <Foto
-                    src={tipo.foto}
-                    alt=""
-                    fill
-                    sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 22vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <span className="absolute inset-0 bg-gradient-to-t from-carvao/85 via-carvao/25 to-transparent" />
-                  <span className="absolute inset-x-0 bottom-0 p-5">
-                    <span className="block font-serif text-xl text-white">{tipo.titulo}</span>
-                    <span className="mt-1 block text-xs text-white/75">{tipo.descricao}</span>
+                  <span className="font-serif text-xl text-carvao transition-colors group-hover:text-oliva md:text-2xl">
+                    {tipo.titulo}
+                  </span>
+                  <span className="flex items-baseline gap-3 text-right">
+                    <span className="hidden text-sm text-carvao/55 sm:inline">{tipo.descricao}</span>
+                    <span
+                      className="text-bronze transition-transform duration-300 group-hover:translate-x-1"
+                      aria-hidden
+                    >
+                      →
+                    </span>
                   </span>
                 </Link>
               </Reveal>
@@ -160,14 +207,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Buffet ───────────────────────────────────────────────────── */}
+      {/* ── Buffet e decoração: parceiros, não serviço da casa ───────── */}
       <section className="bg-areia/25 px-6 py-20 md:py-28">
         <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2 md:gap-16">
           <Reveal>
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-premium">
               <Foto
                 src={FOTOS.cozinha}
-                alt="Cozinha equipada da Dondoka Recepções, com fogão industrial, bancadas em inox e freezer"
+                alt="Cozinha industrial da Dondoka Recepções, com fogão de 6 bocas, bancadas em inox e freezer"
                 fill
                 sizes="(max-width: 768px) 90vw, 45vw"
                 className="object-cover"
@@ -176,23 +223,24 @@ export default function HomePage() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <p className="eyebrow">Buffet</p>
+            <p className="eyebrow">Buffet e decoração</p>
             <h2 className="mt-3 text-3xl leading-tight md:text-4xl">
-              <span className="font-light italic text-bronze">Comida</span> mineira, feita aqui
+              <span className="font-light italic text-bronze">Tudo</span> para o seu evento
             </h2>
             <p className="mt-5 text-carvao/75">
-              Cantinho mineiro de entrada, feijoada completa ou feijão tropeiro com lombo no prato principal,
-              bebidas e equipe de cozinha e copa durante todo o evento.
+              Contamos com parceiros de confiança para buffet e decoração, indicados de acordo com o perfil
+              e as necessidades do seu evento.
             </p>
             <p className="mt-4 text-carvao/75">
-              A cozinha é industrial: fogão de 6 bocas, freezer, bancadas em inox e passa-prates
-              direto para o salão. Se você preferir trazer buffet de fora, a estrutura atende igual.
+              Se você já tem fornecedores, pode trazer sem taxa. A cozinha industrial da casa fica à
+              disposição de quem for servir: fogão de 6 bocas, freezer, bancadas em inox e passagem direta
+              para o salão.
             </p>
             <Link
               href="/buffet"
               className="mt-7 inline-flex items-center gap-2 text-sm text-oliva transition hover:gap-3 hover:text-bronze"
             >
-              Ver o cardápio completo
+              Como funcionam as parcerias
               <span aria-hidden>→</span>
             </Link>
           </Reveal>

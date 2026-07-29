@@ -40,8 +40,8 @@ export default function GuiasPage() {
         titulo="Para planejar"
         destaque="sem susto"
         subtitulo="O que a gente aprende organizando evento todo fim de semana, escrito para você usar. Mesmo que a festa não seja aqui."
-        foto={FOTOS.salaoMesas}
-        fotoAlt="Salão da Dondoka Recepções com mesas montadas para um evento"
+        foto={FOTOS.mezanino}
+        fotoAlt="Mezanino da Dondoka Recepções, o segundo ambiente do espaço"
         ctaSecundario={{ href: "/o-espaco", label: "Conhecer o espaço" }}
       />
 

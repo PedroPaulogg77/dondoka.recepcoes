@@ -9,6 +9,13 @@ type Props = {
   /** Descrição do que se vê — vira o alt do poster e ajuda leitor de tela. */
   legenda: string;
   className?: string;
+  /**
+   * Marque quando o player aparecer logo abaixo do hero. Sem isso o poster
+   * espera o lazy loading, e o primeiro elemento que a pessoa vê ao rolar
+   * aparece em branco por um instante. O vídeo em si continua com
+   * `preload="none"`: o que carrega antes é só o poster, de ~40 KB.
+   */
+  prioridade?: boolean;
 };
 
 /**
@@ -20,7 +27,7 @@ type Props = {
  * - O poster é servido por `next/image`, então vira AVIF/WebP no tamanho certo.
  * - Nada de autoplay: som ligado por decisão de quem assiste.
  */
-export function VideoTour({ src, poster, legenda, className }: Props) {
+export function VideoTour({ src, poster, legenda, className, prioridade = false }: Props) {
   const [tocando, setTocando] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const reduz = useReducedMotion();
@@ -33,7 +40,10 @@ export function VideoTour({ src, poster, legenda, className }: Props) {
 
   return (
     <div
-      className={`relative aspect-[9/16] w-full max-w-[380px] mx-auto overflow-hidden rounded-3xl bg-carvao shadow-premium ${className || ""}`}
+      /* O anel branco translúcido dá contorno ao player quando ele fica sobre
+         fundo escuro, onde a `shadow-premium` (sombra oliva) desaparece. Em
+         fundo claro, ele é discreto o bastante para não pesar. */
+      className={`relative mx-auto aspect-[9/16] w-full max-w-[380px] overflow-hidden rounded-3xl bg-carvao shadow-premium ring-1 ring-white/10 ${className || ""}`}
     >
       {tocando ? (
         <video
@@ -56,6 +66,7 @@ export function VideoTour({ src, poster, legenda, className }: Props) {
             src={poster}
             alt={legenda}
             fill
+            priority={prioridade}
             sizes="(max-width: 640px) 90vw, 380px"
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />

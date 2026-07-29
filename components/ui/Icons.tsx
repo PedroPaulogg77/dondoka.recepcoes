@@ -56,6 +56,15 @@ export const IconKids = (p?: IconProps) => base(
   p
 );
 
+/** Dois ambientes: salão embaixo, mezanino em cima. */
+export const IconAmbientes = (p?: IconProps) => base(
+  <>
+    <path d="M3 20h18M3 20v-5h8v5M11 15V9h10v11" />
+    <path d="M14 20v-3h4v3" />
+  </>,
+  p
+);
+
 // ===== Dados do evento =====
 export const IconUser = (p?: IconProps) => base(
   <>

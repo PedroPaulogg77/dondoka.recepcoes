@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MAPS_URL, NAV, NAV_EVENTOS, SITE, whatsappUrl } from "@/lib/site-config";
+import { MAPS_URL, NAV, SITE, whatsappUrl } from "@/lib/site-config";
+import { TIPOS_EVENTO } from "@/content/espaco";
 
 function IconWhatsApp({ className }: { className?: string }) {
   return (
@@ -55,8 +56,8 @@ export function SiteFooter() {
               className="h-10 w-auto brightness-0 invert opacity-95"
             />
             <p className="mt-5 text-white/80 text-sm max-w-xs leading-relaxed">
-              Espaço para eventos em Belo Horizonte, no Lindéia. Até {SITE.espaco.capacidadeMaxima} pessoas,
-              climatizado, com cozinha equipada e espaço kids.
+              Espaço para eventos em Belo Horizonte, no Lindéia. Até {SITE.espaco.capacidadeMaxima} convidados,
+              em dois ambientes climatizados e com cozinha equipada.
             </p>
 
             <address className="mt-6 not-italic text-sm text-white/80 space-y-1">
@@ -78,9 +79,12 @@ export function SiteFooter() {
             </a>
           </div>
 
-          {/* Navegação */}
+          {/* Navegação.
+              Os guias vivem só aqui: ficam fora do menu principal para não
+              pesar na navegação, e seguem acessíveis para quem chega pelo
+              Google. */}
           <nav aria-label="Rodapé — páginas">
-            <p className="eyebrow text-white/85">O espaço</p>
+            <p className="eyebrow text-white/85">Páginas</p>
             <ul className="mt-4 space-y-2.5 text-sm">
               {NAV.map((item) => (
                 <li key={item.href}>
@@ -102,10 +106,13 @@ export function SiteFooter() {
             <nav aria-label="Rodapé — tipos de evento">
               <p className="eyebrow text-white/85">Tipos de evento</p>
               <ul className="mt-4 space-y-2.5 text-sm">
-                {NAV_EVENTOS.map((item) => (
-                  <li key={item.href}>
-                    <Link href={item.href} className="text-white/80 hover:text-white transition">
-                      {item.label}
+                {TIPOS_EVENTO.map((tipo) => (
+                  <li key={tipo.id}>
+                    <Link
+                      href={`/eventos#${tipo.id}`}
+                      className="text-white/80 hover:text-white transition"
+                    >
+                      {tipo.titulo}
                     </Link>
                   </li>
                 ))}

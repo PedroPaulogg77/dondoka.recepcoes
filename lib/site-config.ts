@@ -22,7 +22,7 @@ export const SITE = {
 
   /** Frase de uma linha que responde "o que é isso?" — usada em meta description e schema. */
   descricaoCurta:
-    "Espaço para eventos em Belo Horizonte, no bairro Lindéia (Barreiro), com capacidade para até 70 pessoas, ambiente climatizado, cozinha equipada e espaço kids.",
+    "Espaço para eventos em Belo Horizonte, no bairro Lindéia (Barreiro), com capacidade para até 70 convidados, dois ambientes, climatização e cozinha equipada.",
 
   contato: {
     telefone: "(31) 97251-9129",
@@ -102,18 +102,20 @@ export const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encod
   `${SITE.nome}, ${SITE.endereco.completo}`
 )}`;
 
-/** Navegação principal — header, footer e sitemap saem daqui. */
+/**
+ * Navegação principal — a ordem é a que a Camila definiu no documento de
+ * ajustes. Seis itens, sem submenu.
+ *
+ * O que NÃO está aqui continua existindo e sendo indexado: os guias vivem em
+ * /guias e aparecem só no rodapé. Página fora do menu não pesa na experiência
+ * e segue trabalhando para a busca — é o item 9 do documento dela, a
+ * estratégia acontecendo nos bastidores.
+ */
 export const NAV = [
   { href: "/o-espaco", label: "O espaço" },
-  { href: "/buffet", label: "Buffet" },
+  { href: "/eventos", label: "Eventos" },
   { href: "/galeria", label: "Galeria" },
+  { href: "/buffet", label: "Buffet e decoração" },
   { href: "/perguntas-frequentes", label: "Perguntas frequentes" },
   { href: "/contato", label: "Contato" },
-] as const;
-
-export const NAV_EVENTOS = [
-  { href: "/eventos/aniversario", label: "Aniversário" },
-  { href: "/eventos/quinze-anos", label: "15 anos" },
-  { href: "/eventos/casamento", label: "Casamento e mini wedding" },
-  { href: "/eventos/corporativo", label: "Corporativo" },
 ] as const;

@@ -13,7 +13,7 @@ import { JsonLd, schemaBreadcrumb, schemaVideo } from "@/lib/schema";
 export const metadata: Metadata = {
   title: "O espaço: estrutura, capacidade e comodidades | Dondoka Recepções",
   description:
-    "Conheça a estrutura da Dondoka Recepções: salão em dois ambientes para até 70 pessoas, mezanino, climatização, cozinha industrial equipada, espaço kids e 3 banheiros. Lindéia, BH.",
+    "Conheça a estrutura da Dondoka Recepções: salão em dois ambientes para até 70 convidados, mezanino, climatização, cozinha industrial equipada e 3 banheiros. Lindéia, BH.",
   alternates: { canonical: urlAbsoluta("/o-espaco") },
 };
 
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 const AMBIENTES = [
   {
     titulo: "Salão principal",
-    foto: FOTOS.salaoMezanino,
+    foto: FOTOS.salaoDecoradoA,
     alt: "Salão principal da Dondoka com parede verde oliva, mesas montadas e mezanino ao fundo",
     paragrafos: [
       "É onde a festa acontece. Comporta as mesas dos convidados e a pista, com pé-direito alto e iluminação embutida no teto.",
@@ -33,7 +33,7 @@ const AMBIENTES = [
     foto: FOTOS.mezanino,
     alt: "Mezanino da Dondoka Recepções, piso superior amplo com guarda-corpo de vidro e metal",
     paragrafos: [
-      "O piso superior é o que diferencia a Dondoka de um salão comum. Ele cria um segundo ambiente sem precisar de parede: dá para usá-lo como área de recepção, mesa de doces, espaço das crianças ou canto de quem quer conversar longe do som.",
+      "O piso superior é o que diferencia a Dondoka de um salão comum. Ele cria um segundo ambiente sem precisar de parede: dá para usá-lo como área de recepção, mesa de doces ou canto de quem quer conversar longe do som.",
       "A escada e o guarda-corpo também resolvem o momento da entrada. Em festa de 15 anos e casamento, descer para o salão à vista de todos muda a cena inteira.",
     ],
   },
@@ -43,16 +43,7 @@ const AMBIENTES = [
     alt: "Cozinha industrial da Dondoka com fogão de 6 bocas, bancadas em inox, freezer e cuba",
     paragrafos: [
       "Fogão industrial de 6 bocas com forno, freezer horizontal, cuba e bancadas em inox, e uma janela de passagem direta para o salão.",
-      "Isso significa duas coisas: o nosso buffet trabalha com estrutura de verdade, e se você contratar buffet de fora, a equipe dele encontra tudo que precisa. Sem improviso e sem aluguel de estrutura extra.",
-    ],
-  },
-  {
-    titulo: "Espaço kids",
-    foto: FOTOS.espacoKids,
-    alt: "Área kids da Dondoka Recepções com brinquedos e escorregador",
-    paragrafos: [
-      "Área separada, com brinquedos, para as crianças aproveitarem em segurança enquanto os adultos ficam por perto.",
-      "Na prática é o item que mais muda a experiência de quem vai à festa com filho pequeno: dá para sentar, comer e conversar sem perder a criança de vista.",
+      "Isso resolve a vida de quem vai servir: a equipe do buffet que você contratar chega e encontra tudo pronto. Sem improviso e sem aluguel de estrutura extra.",
     ],
   },
   {
@@ -67,12 +58,11 @@ const AMBIENTES = [
 ] as const;
 
 const FICHA = [
-  { label: "Capacidade", valor: "Até 70 pessoas" },
+  { label: "Capacidade", valor: "Até 70 convidados" },
   { label: "Ambientes", valor: "Salão principal + mezanino" },
   { label: "Climatização", valor: "Ar-condicionado nos 2 pavimentos" },
   { label: "Cozinha", valor: "Industrial equipada, com passa-prates" },
   { label: "Banheiros", valor: "3, sendo 1 adaptado com fraldário" },
-  { label: "Espaço kids", valor: "Sim, área separada" },
   { label: "Bairro", valor: "Lindéia, Barreiro, Belo Horizonte" },
   { label: "Também atende", valor: "Contagem e Ibirité" },
 ] as const;
@@ -98,9 +88,9 @@ export default function OEspacoPage() {
 
       <HeroSite
         eyebrow="O espaço"
-        titulo="Um salão para até"
-        destaque="70 pessoas"
-        subtitulo="Dois ambientes em níveis diferentes, climatizados, com cozinha industrial equipada, espaço kids e 3 banheiros, no Lindéia, região do Barreiro, em Belo Horizonte."
+        titulo="Um espaço pensado"
+        destaque="para celebrar"
+        subtitulo="Conforto, praticidade e uma estrutura acolhedora para receber momentos especiais. Até 70 convidados, no Lindéia, em Belo Horizonte."
         foto={FOTOS.mezaninoEscada}
         fotoAlt="Vista do mezanino e da escada da Dondoka Recepções, com teto alto e iluminação embutida"
         ctaSecundario={{ href: "/galeria", label: "Ver todas as fotos" }}
