@@ -69,26 +69,32 @@ export default function HomePage() {
       {/* ── Vídeo ────────────────────────────────────────────────────────
           Logo depois do hero, de propósito: é o material mais forte que a casa
           tem. Um evento real, com gente dentro, convence mais rápido que
-          qualquer foto de espaço vazio. Fundo escuro para o vídeo virar o
-          ponto de atenção da seção. */}
-      <section className="relative overflow-hidden bg-carvao px-6 py-20 text-white md:py-28">
-        <div className="absolute inset-0 pattern-claro opacity-[0.06]" aria-hidden />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2 md:gap-16">
+          qualquer foto de espaço vazio.
+
+          Fundo creme (padrão do site), não escuro: bg-carvao sólido foi
+          testado aqui e destoava da paleta aprovada (oliva/creme/areia/
+          bronze), que em nenhum outro lugar do site usa preto como fundo de
+          seção — só em botões e detalhes pequenos (Button variant="dark",
+          FloatingActions). O contorno translúcido do player (ring-white/10
+          em VideoTour) foi pensado para fundo escuro; sobre creme ele soma
+          bem também porque a sombra shadow-premium volta a fazer o trabalho. */}
+      <section className="px-6 py-20 md:py-28">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2 md:gap-16">
           <Reveal>
-            <p className="eyebrow text-areia">Um evento de verdade</p>
-            <h2 className="mt-3 text-3xl leading-tight text-white md:text-4xl">
-              <span className="font-light italic text-areia">Veja</span> a casa em movimento
+            <p className="eyebrow">Um evento de verdade</p>
+            <h2 className="mt-3 text-3xl leading-tight md:text-4xl">
+              <span className="font-light italic text-bronze">Veja</span> a casa em movimento
             </h2>
-            <p className="mt-5 text-white/80">
+            <p className="mt-5 text-carvao/75">
               Este é um casamento civil que aconteceu aqui, gravado do lado de fora até a mesa de doces
               montada. Sem render e sem foto de banco de imagens.
             </p>
-            <p className="mt-4 text-white/80">
+            <p className="mt-4 text-carvao/75">
               A casa com gente dentro, no dia da festa. Ver assim conta mais que qualquer descrição nossa.
             </p>
             <Link
               href="/o-espaco"
-              className="mt-7 inline-flex items-center gap-2 text-sm text-areia transition hover:gap-3 hover:text-white"
+              className="mt-7 inline-flex items-center gap-2 text-sm text-oliva transition hover:gap-3 hover:text-bronze"
             >
               Conhecer a estrutura
               <span aria-hidden>→</span>

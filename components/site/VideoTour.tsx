@@ -40,10 +40,7 @@ export function VideoTour({ src, poster, legenda, className, prioridade = false 
 
   return (
     <div
-      /* O anel branco translúcido dá contorno ao player quando ele fica sobre
-         fundo escuro, onde a `shadow-premium` (sombra oliva) desaparece. Em
-         fundo claro, ele é discreto o bastante para não pesar. */
-      className={`relative mx-auto aspect-[9/16] w-full max-w-[380px] overflow-hidden rounded-3xl bg-carvao shadow-premium ring-1 ring-white/10 ${className || ""}`}
+      className={`relative mx-auto aspect-[9/16] w-full max-w-[380px] overflow-hidden rounded-3xl bg-carvao shadow-premium ${className || ""}`}
     >
       {tocando ? (
         <video
