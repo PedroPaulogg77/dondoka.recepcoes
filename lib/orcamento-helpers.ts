@@ -92,6 +92,33 @@ export const FAIXAS_DESLIGADAS: PrecosEspacoPorDia = {
 };
 
 /**
+ * Devolve o valor do aluguel quando ele é o MESMO em todos os dias, e `null`
+ * quando varia de um dia para outro.
+ *
+ * É o que separa os dois jeitos de cobrar o salão. Com preços diferentes por
+ * dia, o cliente escolhe, e por isso o aluguel nunca entrou no total: somar um
+ * dos três seria escolher por ele. Com valor único não existe escolha, então o
+ * número entra na conta como qualquer outro item, e um "Valor total" sem ele
+ * faria o salão parecer de graça.
+ *
+ * Guardar os três campos iguais em vez de criar uma coluna nova mantém o
+ * caminho de herança do config global funcionando sem mudança de schema.
+ */
+export function valorUnicoEspaco(precos: PrecosEspacoPorDia | null): number | null {
+  if (!precos) return null;
+  const preenchidos = [precos.seg_qui, precos.sex, precos.sab_dom].filter(
+    (v): v is number => typeof v === "number" && v > 0
+  );
+  if (preenchidos.length === 0) return null;
+  return preenchidos.every((v) => v === preenchidos[0]) ? preenchidos[0] : null;
+}
+
+/** Quanto o aluguel acrescenta ao total. Zero quando varia por dia. */
+export function espacoQueSoma(precos: PrecosEspacoPorDia | null): number {
+  return valorUnicoEspaco(precos) ?? 0;
+}
+
+/**
  * Mescla o flag default com os toggles do orçamento, garantindo que toda chave
  * de SecoesVisiveis exista (mesmo em orçamentos antigos sem buffet/servicos).
  */

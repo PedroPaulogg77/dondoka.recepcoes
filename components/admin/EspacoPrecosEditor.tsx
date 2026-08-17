@@ -2,7 +2,9 @@
 import { useRef, useState } from "react";
 import type { PrecosEspacoPorDia } from "@/types/orcamento";
 import { TIER_LABELS, type TierDia } from "@/lib/format";
-import { FAIXAS_DESLIGADAS, temFaixasAtivas } from "@/lib/orcamento-helpers";
+import { FAIXAS_DESLIGADAS, temFaixasAtivas, valorUnicoEspaco } from "@/lib/orcamento-helpers";
+
+type Modo = "unico" | "porDia";
 
 type Props = {
   value: PrecosEspacoPorDia | null;
@@ -40,6 +42,10 @@ export function EspacoPrecosEditor({
    * objeto de faixas nulas em vez de null.
    */
   const [ativo, setAtivo] = useState(() => temFaixasAtivas(value));
+  /** Começa em "único" quando o que está salvo tem os três dias iguais. */
+  const [modo, setModo] = useState<Modo>(() =>
+    valorUnicoEspaco(value) != null || !temFaixasAtivas(value) ? "unico" : "porDia"
+  );
   const isCustom = showResetVsDefault && !deepEqual(value, defaultValue);
 
   function toggle() {
@@ -54,15 +60,35 @@ export function EspacoPrecosEditor({
     }
   }
 
-  function updateTier(tier: TierDia, raw: string) {
+  function parse(raw: string): number | null {
     const num = raw.trim() === "" ? null : Number(raw.replace(",", "."));
+    return num != null && Number.isFinite(num) ? num : null;
+  }
+
+  function updateTier(tier: TierDia, raw: string) {
     const next: PrecosEspacoPorDia = {
       seg_qui: value?.seg_qui ?? null,
       sex: value?.sex ?? null,
       sab_dom: value?.sab_dom ?? null,
-      [tier]: num != null && Number.isFinite(num) ? num : null,
+      [tier]: parse(raw),
     };
     onChange(next);
+  }
+
+  /** Valor único escreve o mesmo número nos três campos. */
+  function updateUnico(raw: string) {
+    const num = parse(raw);
+    onChange({ seg_qui: num, sex: num, sab_dom: num });
+  }
+
+  function trocarModo(novo: Modo) {
+    setModo(novo);
+    if (novo === "unico") {
+      // Leva o primeiro valor preenchido para os três, sem inventar número.
+      const primeiro =
+        value?.seg_qui ?? value?.sex ?? value?.sab_dom ?? null;
+      onChange({ seg_qui: primeiro, sex: primeiro, sab_dom: primeiro });
+    }
   }
 
   return (
@@ -71,7 +97,7 @@ export function EspacoPrecosEditor({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-serif text-base md:text-lg text-carvao">
-              Aluguel por dia da semana
+              Aluguel do espaço
             </h3>
             {showResetVsDefault && ativo && (
               <span
@@ -86,8 +112,9 @@ export function EspacoPrecosEditor({
             )}
           </div>
           <p className="mt-1 text-xs text-carvao/60 leading-relaxed">
-            O cliente vê as 3 faixas como informação — escolhe o dia e soma o valor correspondente.
-            Esses valores não entram no total geral.
+            {modo === "unico"
+              ? "Um valor só, igual em qualquer dia. Entra no total geral da proposta como qualquer outro item."
+              : "O cliente vê as 3 faixas como informação, escolhe o dia e soma o valor correspondente. Nesse modo o aluguel não entra no total geral."}
           </p>
         </div>
 
@@ -112,9 +139,30 @@ export function EspacoPrecosEditor({
 
       {ativo && value && (
         <div className="mt-4 space-y-3">
-          {TIERS.map((tier) => (
-            <label key={tier} className="flex items-center gap-3">
-              <span className="flex-1 text-sm text-carvao/80">{TIER_LABELS[tier]}</span>
+          {/* Escolha entre cobrar o mesmo todo dia ou variar por dia da semana */}
+          <div className="flex gap-1 p-1 rounded-full bg-white/70 w-fit">
+            {([
+              { key: "unico" as const, label: "Mesmo valor todo dia" },
+              { key: "porDia" as const, label: "Varia por dia" },
+            ]).map((m) => (
+              <button
+                key={m.key}
+                type="button"
+                onClick={() => trocarModo(m.key)}
+                className={`px-3 h-8 rounded-full text-xs transition ${
+                  modo === m.key
+                    ? "bg-oliva text-white font-medium"
+                    : "text-carvao/60 hover:text-carvao"
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+
+          {modo === "unico" ? (
+            <label className="flex items-center gap-3">
+              <span className="flex-1 text-sm text-carvao/80">Aluguel do espaço</span>
               <div className="relative shrink-0">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-carvao/40 pointer-events-none">
                   R$
@@ -124,14 +172,36 @@ export function EspacoPrecosEditor({
                   inputMode="decimal"
                   min={0}
                   step={50}
-                  value={value[tier] ?? ""}
-                  onChange={(e) => updateTier(tier, e.target.value)}
+                  value={value.seg_qui ?? ""}
+                  onChange={(e) => updateUnico(e.target.value)}
                   placeholder="0"
                   className="form-input w-32 pl-9 tabular-nums text-right"
+                  autoFocus={false}
                 />
               </div>
             </label>
-          ))}
+          ) : (
+            TIERS.map((tier) => (
+              <label key={tier} className="flex items-center gap-3">
+                <span className="flex-1 text-sm text-carvao/80">{TIER_LABELS[tier]}</span>
+                <div className="relative shrink-0">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-carvao/40 pointer-events-none">
+                    R$
+                  </span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step={50}
+                    value={value[tier] ?? ""}
+                    onChange={(e) => updateTier(tier, e.target.value)}
+                    placeholder="0"
+                    className="form-input w-32 pl-9 tabular-nums text-right"
+                  />
+                </div>
+              </label>
+            ))
+          )}
 
           {showResetVsDefault && isCustom && defaultValue && (
             <button

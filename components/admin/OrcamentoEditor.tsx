@@ -21,7 +21,7 @@ import {
   resolveDefaults,
   type FormState,
 } from "@/lib/orcamento-helpers";
-import { resolveKits, sincronizarPorPessoa } from "@/lib/kits";
+import { resolveBiblioteca, resolveKits, sincronizarPorPessoa } from "@/lib/kits";
 import type { ConfigGlobal, Orcamento, SecoesVisiveis } from "@/types/orcamento";
 
 type Mode = "criar" | "editar";
@@ -45,6 +45,7 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
 
   const defaults = useMemo(() => resolveDefaults(config), [config]);
   const kits = useMemo(() => resolveKits(config), [config]);
+  const biblioteca = useMemo(() => resolveBiblioteca(config), [config]);
 
   const initial = useMemo(() => buildInitialForm(config, orcamento), [config, orcamento]);
   const [form, setForm] = useState<FormState>(initial);
@@ -636,6 +637,7 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         precosEspacoDefault={defaults.precosEspaco}
         onChangePrecosEspaco={(v) => update("precos_espaco_por_dia", v)}
         kits={kits}
+        biblioteca={biblioteca}
         convidados={form.cliente_convidados}
         onUndo={undoDrawer}
       />

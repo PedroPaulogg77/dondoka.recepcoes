@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
 import { brl } from "@/lib/format";
-import { contarInclusos, temInclusos } from "@/lib/kits";
-import type { ItemOrcamento } from "@/types/orcamento";
+import { contarInclusos, novoId as gerarId, temInclusos } from "@/lib/kits";
+import { SeletorBiblioteca } from "./KitEditor";
+import type { BibliotecaGrupo, ItemOrcamento, KitGrupo } from "@/types/orcamento";
 
 type Props = {
   titulo: string;
@@ -10,6 +11,8 @@ type Props = {
   onChange: (itens: ItemOrcamento[]) => void;
   /** Usado só no rótulo do item "por pessoa". */
   convidados?: number;
+  /** Fonte dos checkboxes ao acrescentar item a um kit já inserido. */
+  biblioteca?: BibliotecaGrupo[];
 };
 
 function novoId() {
@@ -22,7 +25,13 @@ const inputBase =
 const iconBtnBase =
   "w-8 h-8 inline-flex items-center justify-center rounded-full transition";
 
-export function ItensEditor({ titulo, itens, onChange, convidados = 0 }: Props) {
+export function ItensEditor({
+  titulo,
+  itens,
+  onChange,
+  convidados = 0,
+  biblioteca = [],
+}: Props) {
   function update(idx: number, patch: Partial<ItemOrcamento>) {
     const next = itens.map((it, i) => (i === idx ? { ...it, ...patch } : it));
     onChange(next);
@@ -145,6 +154,7 @@ export function ItensEditor({ titulo, itens, onChange, convidados = 0 }: Props) 
                   <PainelKit
                     item={item}
                     convidados={convidados}
+                    biblioteca={biblioteca}
                     onChange={(patch) => update(idx, patch)}
                   />
                 )}
@@ -182,26 +192,40 @@ export function ItensEditor({ titulo, itens, onChange, convidados = 0 }: Props) 
 function PainelKit({
   item,
   convidados,
+  biblioteca,
   onChange,
 }: {
   item: ItemOrcamento;
   convidados: number;
+  biblioteca: BibliotecaGrupo[];
   onChange: (patch: Partial<ItemOrcamento>) => void;
 }) {
   const [aberto, setAberto] = useState(false);
   const grupos = item.inclui ?? [];
   const observacoes = item.observacoes ?? [];
 
-  function removerItemDoGrupo(gIdx: number, nome: string) {
+  function patchGrupo(gIdx: number, itensNovos: string[]) {
     onChange({
-      inclui: grupos.map((g, i) =>
-        i === gIdx ? { ...g, itens: g.itens.filter((n) => n !== nome) } : g
-      ),
+      inclui: grupos.map((g, i) => (i === gIdx ? { ...g, itens: itensNovos } : g)),
     });
+  }
+
+  function alternarNoGrupo(gIdx: number, nome: string) {
+    const atual = grupos[gIdx].itens;
+    patchGrupo(gIdx, atual.includes(nome) ? atual.filter((n) => n !== nome) : [...atual, nome]);
+  }
+
+  function adicionarGrupo() {
+    const novo: KitGrupo = { id: gerarId("g"), titulo: "Extras", itens: [] };
+    onChange({ inclui: [...grupos, novo] });
   }
 
   function removerObservacao(i: number) {
     onChange({ observacoes: observacoes.filter((_, j) => j !== i) });
+  }
+
+  function adicionarObservacao(texto: string) {
+    onChange({ observacoes: [...observacoes, texto] });
   }
 
   return (
@@ -242,54 +266,200 @@ function PainelKit({
           </p>
 
           {grupos.map((g, gIdx) => (
-            <div key={g.id}>
-              <div className="flex items-baseline gap-2">
-                <span className="eyebrow text-bronze">{g.titulo}</span>
-                {g.nota && <span className="text-[11px] text-carvao/50">· {g.nota}</span>}
-              </div>
-              <ul className="mt-1.5 flex flex-wrap gap-1.5">
-                {g.itens.map((nome, i) => (
-                  <li key={`${nome}-${i}`}>
-                    <button
-                      type="button"
-                      onClick={() => removerItemDoGrupo(gIdx, nome)}
-                      title="Tirar deste orçamento"
-                      className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 h-7 rounded-full bg-areia/40 text-carvao/75 text-[11px] hover:bg-rose-50 hover:text-rose-600 transition"
-                    >
-                      {nome}
-                      <span aria-hidden className="text-xs leading-none">×</span>
-                    </button>
-                  </li>
-                ))}
-                {g.itens.length === 0 && (
-                  <li className="text-[11px] text-carvao/40">Grupo vazio, não aparece na proposta.</li>
-                )}
-              </ul>
-            </div>
+            <GrupoDoKit
+              key={g.id}
+              grupo={g}
+              biblioteca={biblioteca}
+              onAlternar={(nome) => alternarNoGrupo(gIdx, nome)}
+              onRenomear={(titulo) =>
+                onChange({
+                  inclui: grupos.map((x, i) => (i === gIdx ? { ...x, titulo } : x)),
+                })
+              }
+              onRemoverGrupo={() =>
+                onChange({ inclui: grupos.filter((_, i) => i !== gIdx) })
+              }
+            />
           ))}
 
-          {observacoes.length > 0 && (
-            <div>
-              <span className="eyebrow text-bronze">Também incluso</span>
-              <ul className="mt-1.5 flex flex-wrap gap-1.5">
-                {observacoes.map((o, i) => (
-                  <li key={`${o}-${i}`}>
-                    <button
-                      type="button"
-                      onClick={() => removerObservacao(i)}
-                      title="Tirar deste orçamento"
-                      className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 h-7 rounded-full bg-areia/40 text-carvao/75 text-[11px] hover:bg-rose-50 hover:text-rose-600 transition"
-                    >
-                      {o}
-                      <span aria-hidden className="text-xs leading-none">×</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={adicionarGrupo}
+            className="inline-flex items-center gap-1.5 px-3 h-8 rounded-full border border-oliva/30 text-oliva text-[11px] font-medium hover:bg-oliva/5 transition"
+          >
+            + Novo grupo neste orçamento
+          </button>
+
+          <div className="pt-2 border-t border-areia/40">
+            <span className="eyebrow text-bronze">Também incluso</span>
+            <ul className="mt-1.5 flex flex-wrap gap-1.5">
+              {observacoes.map((o, i) => (
+                <li key={`${o}-${i}`}>
+                  <button
+                    type="button"
+                    onClick={() => removerObservacao(i)}
+                    title="Tirar deste orçamento"
+                    className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 h-7 rounded-full bg-areia/40 text-carvao/75 text-[11px] hover:bg-rose-50 hover:text-rose-600 transition"
+                  >
+                    {o}
+                    <span aria-hidden className="text-xs leading-none">×</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <CampoNovoItem
+              placeholder="Ex: 1 hora a mais de evento"
+              onAdd={adicionarObservacao}
+            />
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+
+/**
+ * Um grupo dentro do kit já inserido no orçamento.
+ *
+ * Aqui dá para tirar e também para PÔR item, o que faltava: antes só era
+ * possível remover, e para acrescentar um salgado num cliente específico o
+ * caminho era editar o kit no catálogo, o que mudaria todos os próximos
+ * orçamentos junto.
+ *
+ * A biblioteca aparece só como fonte de marcação. O campo que acrescenta item
+ * à biblioteca global não vem, de propósito: mexer no catálogo a partir de um
+ * orçamento seria efeito colateral escondido.
+ */
+function GrupoDoKit({
+  grupo,
+  biblioteca,
+  onAlternar,
+  onRenomear,
+  onRemoverGrupo,
+}: {
+  grupo: KitGrupo;
+  biblioteca: BibliotecaGrupo[];
+  onAlternar: (nome: string) => void;
+  onRenomear: (titulo: string) => void;
+  onRemoverGrupo: () => void;
+}) {
+  const [seletorAberto, setSeletorAberto] = useState(false);
+
+  return (
+    <div className="rounded-lg border border-areia/40 p-2.5">
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={grupo.titulo}
+          onChange={(e) => onRenomear(e.target.value)}
+          className="flex-1 min-w-0 bg-transparent text-[11px] uppercase tracking-widest text-bronze focus:outline-none focus:bg-white rounded px-1 py-0.5"
+          aria-label="Título do grupo"
+        />
+        {grupo.nota && (
+          <span className="text-[11px] text-carvao/50 shrink-0">{grupo.nota}</span>
+        )}
+        <button
+          type="button"
+          onClick={onRemoverGrupo}
+          aria-label="Remover grupo deste orçamento"
+          className="w-6 h-6 inline-flex items-center justify-center rounded-full text-carvao/35 hover:bg-rose-50 hover:text-rose-500 transition shrink-0"
+        >
+          <span aria-hidden className="text-sm leading-none">×</span>
+        </button>
+      </div>
+
+      <ul className="mt-1.5 flex flex-wrap gap-1.5">
+        {grupo.itens.map((nome, i) => (
+          <li key={`${nome}-${i}`}>
+            <button
+              type="button"
+              onClick={() => onAlternar(nome)}
+              title="Tirar deste orçamento"
+              className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 h-7 rounded-full bg-areia/40 text-carvao/75 text-[11px] hover:bg-rose-50 hover:text-rose-600 transition"
+            >
+              {nome}
+              <span aria-hidden className="text-xs leading-none">×</span>
+            </button>
+          </li>
+        ))}
+        {grupo.itens.length === 0 && (
+          <li className="text-[11px] text-carvao/40">Grupo vazio, não aparece na proposta.</li>
+        )}
+      </ul>
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {biblioteca.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setSeletorAberto((v) => !v)}
+            aria-expanded={seletorAberto}
+            className="inline-flex items-center gap-1.5 px-3 h-7 rounded-full border border-oliva/30 text-oliva text-[11px] font-medium hover:bg-oliva/5 transition"
+          >
+            {seletorAberto ? "Fechar lista" : "Escolher da lista"}
+          </button>
+        )}
+        <div className="flex-1 min-w-[180px]">
+          <CampoNovoItem placeholder="ou digite um item" onAdd={onAlternar} />
+        </div>
+      </div>
+
+      {seletorAberto && (
+        <div className="mt-2">
+          <SeletorBiblioteca
+            biblioteca={biblioteca}
+            selecionados={grupo.itens}
+            onAlternar={onAlternar}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Campo curto de "digitar e adicionar", com Enter funcionando. */
+function CampoNovoItem({
+  placeholder,
+  onAdd,
+}: {
+  placeholder: string;
+  onAdd: (texto: string) => void;
+}) {
+  const [valor, setValor] = useState("");
+  function enviar() {
+    const t = valor.trim();
+    if (!t) return;
+    onAdd(t);
+    setValor("");
+  }
+  return (
+    <div className="flex items-center gap-1.5 mt-1.5">
+      <input
+        type="text"
+        value={valor}
+        onChange={(e) => setValor(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            enviar();
+          }
+        }}
+        placeholder={placeholder}
+        className="form-input h-7 text-[11px] flex-1"
+      />
+      <button
+        type="button"
+        onClick={enviar}
+        disabled={!valor.trim()}
+        aria-label="Adicionar"
+        className="w-7 h-7 inline-flex items-center justify-center rounded-full text-oliva hover:bg-oliva/10 disabled:opacity-30 transition shrink-0"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-3 h-3">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </button>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/format";
@@ -45,10 +46,13 @@ function mesmaLista(a: string[], b: string[]) {
 }
 
 export function FotosPicker({ selecionadas, onChange, padrao }: Props) {
+  const router = useRouter();
   const [storage, setStorage] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [apagando, setApagando] = useState<string | null>(null);
+  const [limpando, setLimpando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -108,23 +112,64 @@ export function FotosPicker({ selecionadas, onChange, padrao }: Props) {
    * opção. Para essas, desmarcar já resolve.
    */
   async function apagarDoStorage(path: string) {
-    const usadaAqui = selecionadas.includes(path);
-    const aviso = usadaAqui
-      ? "Apagar esta foto de vez? Ela sai deste orçamento e de qualquer outro que a esteja usando."
-      : "Apagar esta foto de vez? Ela sai de qualquer orçamento que a esteja usando.";
-    if (!confirm(aviso)) return;
+    if (
+      !confirm(
+        "Apagar esta foto de vez? Ela sai deste orçamento e de todos os outros que a estejam usando, inclusive propostas já enviadas."
+      )
+    ) {
+      return;
+    }
 
     setApagando(path);
     setErro(null);
-    const supabase = createBrowserSupabase();
-    const { error } = await supabase.storage.from("fotos-espaco").remove([path]);
+    /**
+     * Passa pela rota do servidor, não direto no Storage.
+     *
+     * Apagando direto o arquivo some e os caminhos continuam gravados em cada
+     * orçamento, virando quadro quebrado na proposta do cliente. A rota apaga e
+     * limpa as referências na mesma operação.
+     */
+    const res = await fetch("/api/admin/fotos", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path }),
+    });
     setApagando(null);
-    if (error) {
-      setErro("Não foi possível apagar a foto.");
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setErro(body.error || "Não foi possível apagar a foto.");
       return;
     }
     setStorage((prev) => prev.filter((p) => p !== path));
-    if (usadaAqui) onChange(selecionadas.filter((p) => p !== path));
+    onChange(selecionadas.filter((p) => p !== path));
+    router.refresh();
+  }
+
+  /** Limpa referências a fotos que já não existem mais no Storage. */
+  async function limparQuebradas() {
+    setLimpando(true);
+    setErro(null);
+    setAviso(null);
+    const res = await fetch("/api/admin/fotos", { method: "POST" });
+    setLimpando(false);
+    if (!res.ok) {
+      setErro("Não foi possível varrer as fotos quebradas.");
+      return;
+    }
+    const body = (await res.json()) as {
+      orfas: string[];
+      orcamentosAtualizados: number;
+    };
+    if (body.orfas.length === 0) {
+      setAviso("Nenhuma foto quebrada encontrada.");
+    } else {
+      setAviso(
+        `${body.orfas.length} foto(s) que não existiam mais foram removidas de ${body.orcamentosAtualizados} orçamento(s).`
+      );
+      onChange(selecionadas.filter((p) => !body.orfas.includes(p)));
+    }
+    router.refresh();
+    setTimeout(() => setAviso(null), 6000);
   }
 
   return (
@@ -162,6 +207,11 @@ export function FotosPicker({ selecionadas, onChange, padrao }: Props) {
       {erro && (
         <p className="mb-3 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-700">
           {erro}
+        </p>
+      )}
+      {aviso && (
+        <p className="mb-3 rounded-lg bg-oliva/10 border border-oliva/30 px-3 py-2 text-xs text-oliva">
+          {aviso}
         </p>
       )}
 
@@ -226,10 +276,21 @@ export function FotosPicker({ selecionadas, onChange, padrao }: Props) {
         })}
       </div>
 
-      <p className="mt-2 text-[11px] text-carvao/50">
-        As fotos do acervo da casa não podem ser apagadas por aqui, só desmarcadas. A lixeira
-        aparece nas que você mesmo enviou.
-      </p>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[11px] text-carvao/50 max-w-md">
+          As fotos do acervo da casa não podem ser apagadas por aqui, só desmarcadas. A lixeira
+          aparece nas que você mesmo enviou, e apagar tira a foto de todas as propostas.
+        </p>
+        <button
+          type="button"
+          onClick={limparQuebradas}
+          disabled={limpando}
+          title="Procura fotos que já foram apagadas e ainda aparecem quebradas em alguma proposta"
+          className="text-[11px] text-carvao/50 hover:text-carvao underline-offset-4 hover:underline disabled:opacity-50"
+        >
+          {limpando ? "Varrendo..." : "Limpar fotos quebradas"}
+        </button>
+      </div>
     </div>
   );
 }

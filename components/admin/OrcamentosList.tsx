@@ -2,13 +2,21 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import type { Orcamento, StatusOrcamento } from "@/types/orcamento";
+import type { Orcamento, PrecosEspacoPorDia, StatusOrcamento } from "@/types/orcamento";
 import { brl, dataBR, tempoRelativo } from "@/lib/format";
+import { espacoQueSoma } from "@/lib/orcamento-helpers";
 
-function calcularTotal(o: Orcamento) {
+function calcularTotal(o: Orcamento, padrao: PrecosEspacoPorDia | null) {
   const sum = (arr: { qtd: number; valor_unitario: number }[]) =>
     arr.reduce((acc, i) => acc + (i.qtd || 0) * (i.valor_unitario || 0), 0);
-  return sum(o.itens_espaco) + sum(o.itens_decoracao) + sum(o.itens_buffet);
+  // O aluguel só entra quando é o mesmo em todos os dias. Variando por dia ele
+  // é informativo, e somar um dos três aqui inventaria um número.
+  return (
+    sum(o.itens_espaco) +
+    sum(o.itens_decoracao) +
+    sum(o.itens_buffet) +
+    espacoQueSoma(o.precos_espaco_por_dia ?? padrao)
+  );
 }
 
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
@@ -28,7 +36,13 @@ const TABS: { value: FilterTab; label: string }[] = [
   { value: "recusado", label: "Recusado" },
 ];
 
-export function OrcamentosList({ orcamentos }: { orcamentos: Orcamento[] }) {
+export function OrcamentosList({
+  orcamentos,
+  precosEspacoPadrao = null,
+}: {
+  orcamentos: Orcamento[];
+  precosEspacoPadrao?: PrecosEspacoPorDia | null;
+}) {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<FilterTab>("todos");
 
@@ -118,7 +132,7 @@ export function OrcamentosList({ orcamentos }: { orcamentos: Orcamento[] }) {
         <div className="bg-white border border-areia/60 rounded-2xl overflow-hidden shadow-soft">
           <ul className="divide-y divide-areia/40">
             {filtered.map((o) => {
-              const total = calcularTotal(o);
+              const total = calcularTotal(o, precosEspacoPadrao);
               const st = STATUS_LABEL[o.status] || STATUS_LABEL.rascunho;
               return (
                 <li

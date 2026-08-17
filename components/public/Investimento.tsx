@@ -5,7 +5,7 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
 import { brl } from "@/lib/format";
 import type { ItemOrcamento, PrecosEspacoPorDia } from "@/types/orcamento";
-import { temFaixasAtivas } from "@/lib/orcamento-helpers";
+import { espacoQueSoma, temFaixasAtivas, valorUnicoEspaco } from "@/lib/orcamento-helpers";
 import { contarInclusos, temInclusos } from "@/lib/kits";
 import { EspacoFaixas } from "./EspacoFaixas";
 
@@ -279,18 +279,22 @@ export function Investimento({
   clienteData?: string | null;
 }) {
   const usarFaixas = temFaixasAtivas(precosEspaco);
+  /**
+   * Preço igual em todos os dias soma no total. Preço que varia por dia não,
+   * porque somar um dos três seria escolher o dia pelo cliente.
+   */
+  const aluguelUnico = valorUnicoEspaco(precosEspaco);
+  const variaPorDia = usarFaixas && aluguelUnico == null;
 
-  // Com faixas ativas, aluguel NUNCA entra no total — é sempre informativo.
-  // O cliente vê os 3 valores e mentalmente soma o do dia que escolher.
   const subtotalEspaco = subtotal(espaco);
-  const totalSemAluguel = subtotalEspaco + subtotal(decoracao) + subtotal(buffet);
+  const total = subtotalEspaco + subtotal(decoracao) + subtotal(buffet) + espacoQueSoma(precosEspaco);
 
-  if (totalSemAluguel === 0 && !espaco.length && !decoracao.length && !buffet.length && !usarFaixas) {
+  if (total === 0 && !espaco.length && !decoracao.length && !buffet.length && !usarFaixas) {
     return null;
   }
 
-  // Esconde a caixa "Valor total" quando faixas ativas E não há nada além de espaço pra somar
-  const escondeTotal = usarFaixas && totalSemAluguel === 0;
+  // Esconde a caixa do total quando o aluguel varia e não há mais nada pra somar
+  const escondeTotal = variaPorDia && total === 0;
 
   return (
     <section id="investimento" className="py-20 md:py-28 px-6">
@@ -298,8 +302,8 @@ export function Investimento({
         <SectionTitle eyebrow="Investimento" title="Resumo da proposta" />
 
         <p className="mt-6 text-center text-sm text-carvao/55 max-w-md mx-auto">
-          {usarFaixas
-            ? "O aluguel do espaço varia conforme o dia da semana — você soma o valor do dia escolhido às demais categorias."
+          {variaPorDia
+            ? "O aluguel do espaço varia conforme o dia da semana. Some o valor do dia escolhido às demais categorias."
             : "Toque em cada categoria para ver os itens inclusos."}
         </p>
 
@@ -326,10 +330,10 @@ export function Investimento({
               <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
                   <div className="eyebrow text-white/80">
-                    {usarFaixas ? "Demais categorias" : "Valor total"}
+                    {variaPorDia ? "Demais categorias" : "Valor total"}
                   </div>
                   <p className="mt-2 text-white/90 text-sm max-w-xs">
-                    {usarFaixas
+                    {variaPorDia
                       ? "Soma de decoração e buffet. O aluguel do espaço é informado acima e varia conforme o dia."
                       : "Investimento completo para sua celebração no espaço Dondoka."}
                   </p>
@@ -340,7 +344,7 @@ export function Investimento({
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
                 >
-                  <TotalCounter total={totalSemAluguel} />
+                  <TotalCounter total={total} />
                 </motion.div>
               </div>
             </div>

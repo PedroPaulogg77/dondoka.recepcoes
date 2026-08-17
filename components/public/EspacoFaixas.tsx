@@ -1,6 +1,7 @@
 "use client";
 import { Reveal } from "@/components/ui/Reveal";
 import { brl, TIER_LABELS, tierFromDate, type TierDia } from "@/lib/format";
+import { valorUnicoEspaco } from "@/lib/orcamento-helpers";
 import type { PrecosEspacoPorDia } from "@/types/orcamento";
 
 type Props = {
@@ -20,12 +21,33 @@ const TIERS: TierDia[] = ["seg_qui", "sex", "sab_dom"];
  */
 export function EspacoFaixas({ precos, clienteData }: Props) {
   const tierAtivo = tierFromDate(clienteData);
+  const unico = valorUnicoEspaco(precos);
 
   const faixasPreenchidas = TIERS
     .map((t) => ({ tier: t, valor: precos[t] }))
     .filter((f): f is { tier: TierDia; valor: number } => typeof f.valor === "number" && f.valor > 0);
 
   if (faixasPreenchidas.length === 0) return null;
+
+  /**
+   * Valor igual em todos os dias vira uma linha só.
+   *
+   * Três cartões com o mesmo número dizem ao cliente que existe uma escolha a
+   * fazer quando não existe nenhuma. E como não há escolha, este valor soma no
+   * total, então a linha é igual à de qualquer outra categoria.
+   */
+  if (unico != null) {
+    return (
+      <Reveal>
+        <div className="py-5 px-1 border-b border-areia/60 flex justify-between items-baseline gap-4">
+          <span className="font-serif text-lg md:text-xl text-carvao">Espaço</span>
+          <span className="font-serif text-bronze tabular-nums whitespace-nowrap">
+            {brl(unico)}
+          </span>
+        </div>
+      </Reveal>
+    );
+  }
 
   return (
     <Reveal>

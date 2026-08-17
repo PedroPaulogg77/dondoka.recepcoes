@@ -307,7 +307,15 @@ function GrupoEditor({
 
 /* ─────────────────────────────────────────────────────────────── */
 
-function SeletorBiblioteca({
+/**
+ * Painel de marcação da biblioteca.
+ *
+ * Exportado porque o mesmo seletor serve em dois lugares: montando o kit no
+ * catálogo e acrescentando item a um kit já inserido num orçamento. Quando
+ * `onAddNaBiblioteca` não vem, o campo de "novo item neste grupo" some, porque
+ * dentro do orçamento mexer na biblioteca global seria efeito colateral.
+ */
+export function SeletorBiblioteca({
   biblioteca,
   selecionados,
   onAlternar,
@@ -316,7 +324,7 @@ function SeletorBiblioteca({
   biblioteca: BibliotecaGrupo[];
   selecionados: string[];
   onAlternar: (item: string) => void;
-  onAddNaBiblioteca: (grupoId: string, item: string) => void;
+  onAddNaBiblioteca?: (grupoId: string, item: string) => void;
 }) {
   const [busca, setBusca] = useState("");
   const [abertos, setAbertos] = useState<string[]>(() => biblioteca.slice(0, 1).map((g) => g.id));
@@ -396,7 +404,9 @@ function SeletorBiblioteca({
                       );
                     })}
                   </div>
-                  {!termo && <AddNaBiblioteca grupoId={g.id} onAdd={onAddNaBiblioteca} />}
+                  {!termo && onAddNaBiblioteca && (
+                    <AddNaBiblioteca grupoId={g.id} onAdd={onAddNaBiblioteca} />
+                  )}
                 </div>
               )}
             </div>

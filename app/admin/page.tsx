@@ -45,7 +45,12 @@ export default async function AdminHome() {
       </div>
 
       <div className="mt-8">
-        <OrcamentosList orcamentos={orcamentos} />
+        {/* O padrão global entra porque orçamento que herda guarda null na
+            coluna, e sem ele o aluguel sumiria do total da listagem. */}
+        <OrcamentosList
+          orcamentos={orcamentos}
+          precosEspacoPadrao={config?.precos_espaco_por_dia ?? null}
+        />
       </div>
     </div>
   );

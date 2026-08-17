@@ -11,8 +11,22 @@ function resolveSrc(path: string) {
   return `${base}/storage/v1/object/public/fotos-espaco/${path}`;
 }
 
-export function Galeria({ fotos }: { fotos: string[] }) {
+export function Galeria({ fotos: recebidas }: { fotos: string[] }) {
   const [aberto, setAberto] = useState<string | null>(null);
+  /**
+   * Foto que não carrega sai da galeria em vez de virar quadro cinza.
+   *
+   * Acontece quando um arquivo é apagado do Storage e algum orçamento continua
+   * apontando para ele. O painel tem a varredura que limpa essas referências,
+   * mas o cliente pode abrir a proposta antes de alguém rodar a limpeza, e uma
+   * foto a menos é melhor do que uma moldura vazia no meio do carrossel.
+   */
+  const [quebradas, setQuebradas] = useState<string[]>([]);
+  const fotos = recebidas.filter((f) => !quebradas.includes(f));
+  const marcarQuebrada = useCallback(
+    (src: string) => setQuebradas((prev) => (prev.includes(src) ? prev : [...prev, src])),
+    []
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -73,6 +87,7 @@ export function Galeria({ fotos }: { fotos: string[] }) {
                   fill
                   sizes="(max-width: 640px) 70vw, (max-width: 768px) 45vw, (max-width: 1024px) 30vw, 22vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  onError={() => marcarQuebrada(foto)}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-carvao/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition" />
               </button>
@@ -121,7 +136,13 @@ export function Galeria({ fotos }: { fotos: string[] }) {
         <div className="grid grid-cols-4 gap-2">
           {fotos.slice(0, 4).map((foto, i) => (
             <div key={foto} className="relative aspect-[3/4] overflow-hidden rounded-lg bg-areia">
-              <Image src={resolveSrc(foto)} alt="" fill className="object-cover" />
+              <Image
+                src={resolveSrc(foto)}
+                alt=""
+                fill
+                className="object-cover"
+                onError={() => marcarQuebrada(foto)}
+              />
             </div>
           ))}
         </div>
@@ -145,7 +166,13 @@ export function Galeria({ fotos }: { fotos: string[] }) {
               className="relative w-full max-w-4xl aspect-[3/4] md:aspect-video"
               onClick={(e) => e.stopPropagation()}
             >
-              <Image src={resolveSrc(aberto)} alt="" fill className="object-contain" />
+              <Image
+                src={resolveSrc(aberto)}
+                alt=""
+                fill
+                className="object-contain"
+                onError={() => marcarQuebrada(aberto)}
+              />
               <button
                 onClick={() => setAberto(null)}
                 aria-label="Fechar"

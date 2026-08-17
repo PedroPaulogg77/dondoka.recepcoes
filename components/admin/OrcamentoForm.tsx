@@ -8,8 +8,16 @@ import { BuffetEditor } from "./BuffetEditor";
 import { ServicosEditor } from "./ServicosEditor";
 import { SectionHelp } from "./SectionHelp";
 import { EspacoPrecosEditor } from "./EspacoPrecosEditor";
+import { AdicionarKit } from "./AdicionarKit";
 import { brl } from "@/lib/format";
-import { resolveDefaults, temFaixasAtivas, type FormState } from "@/lib/orcamento-helpers";
+import { resolveBiblioteca, resolveKits } from "@/lib/kits";
+import {
+  espacoQueSoma,
+  resolveDefaults,
+  temFaixasAtivas,
+  valorUnicoEspaco,
+  type FormState,
+} from "@/lib/orcamento-helpers";
 import {
   type Orcamento,
   type SecoesVisiveis,
@@ -82,11 +90,18 @@ export function OrcamentoForm({
   const defaultServicos = defaults.servicos;
   const defaultPrecosEspaco = defaults.precosEspaco;
 
+  const kits = resolveKits(config);
+  const biblioteca = resolveBiblioteca(config);
+
   const usarFaixas = temFaixasAtivas(form.precos_espaco_por_dia);
-  // Aluguel das faixas é só informativo — não entra no total.
-  const total = [form.itens_espaco, form.itens_decoracao, form.itens_buffet]
-    .flat()
-    .reduce((acc, i) => acc + (i.qtd || 0) * (i.valor_unitario || 0), 0);
+  const variaPorDia = usarFaixas && valorUnicoEspaco(form.precos_espaco_por_dia) == null;
+  // Aluguel com valor único soma. Variando por dia não, porque quem escolhe o
+  // dia é o cliente.
+  const total =
+    [form.itens_espaco, form.itens_decoracao, form.itens_buffet]
+      .flat()
+      .reduce((acc, i) => acc + (i.qtd || 0) * (i.valor_unitario || 0), 0) +
+    espacoQueSoma(form.precos_espaco_por_dia);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -268,30 +283,48 @@ export function OrcamentoForm({
             itens={form.itens_espaco}
             onChange={(v) => up("itens_espaco", v)}
             convidados={form.cliente_convidados}
+            biblioteca={biblioteca}
+          />
+
+          <AdicionarKit
+            categoria="decoracao"
+            kits={kits}
+            convidados={form.cliente_convidados}
+            onAdicionar={(item) => up("itens_decoracao", [...form.itens_decoracao, item])}
           />
           <ItensEditor
             titulo="Decoração"
             itens={form.itens_decoracao}
             onChange={(v) => up("itens_decoracao", v)}
             convidados={form.cliente_convidados}
+            biblioteca={biblioteca}
+          />
+
+          <AdicionarKit
+            categoria="buffet"
+            kits={kits}
+            convidados={form.cliente_convidados}
+            onAdicionar={(item) => up("itens_buffet", [...form.itens_buffet, item])}
           />
           <ItensEditor
             titulo="Buffet"
             itens={form.itens_buffet}
             onChange={(v) => up("itens_buffet", v)}
             convidados={form.cliente_convidados}
+            biblioteca={biblioteca}
           />
         </div>
         <div className="mt-4 px-6 py-4 rounded-2xl bg-oliva text-white">
           <div className="flex justify-between items-center">
             <span className="eyebrow text-white/70">
-              {usarFaixas ? "Demais categorias" : "Total geral"}
+              {variaPorDia ? "Demais categorias" : "Total geral"}
             </span>
             <span className="text-2xl font-serif tabular-nums">{brl(total)}</span>
           </div>
-          {usarFaixas && (
+          {variaPorDia && (
             <p className="mt-2 text-xs text-white/75 leading-relaxed">
-              O aluguel do espaço aparece como 3 faixas informativas — não soma no total. O cliente escolhe o dia e soma o valor da faixa correspondente.
+              Com valor diferente por dia, o aluguel aparece como 3 faixas informativas e não
+              soma no total. O cliente escolhe o dia e soma o valor correspondente.
             </p>
           )}
         </div>
