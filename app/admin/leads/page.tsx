@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { createAdminSupabase } from "@/lib/supabase/admin";
+import { createServerSupabase } from "@/lib/supabase/server";
+import { requirePageAuth } from "@/lib/auth-guard";
 import { dataBR, tempoRelativo } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,16 @@ function paraWhatsapp(telefone: string) {
 }
 
 export default async function LeadsPage() {
-  const supabase = createAdminSupabase();
+  await requirePageAuth();
+  /**
+   * Cliente do usuário logado, não a service role.
+   *
+   * Esta página lia com a chave que ignora RLS por completo, então bastava
+   * chegar até a rota para ver nome, WhatsApp e e-mail de todo mundo que
+   * preencheu o formulário. Agora a leitura passa pela policy leads_admin_all,
+   * que exige sessão de verdade.
+   */
+  const supabase = createServerSupabase();
   const { data, error } = await supabase
     .from("leads")
     .select("*")

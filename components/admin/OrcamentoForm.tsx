@@ -1,6 +1,4 @@
 "use client";
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { ItensEditor } from "./ItensEditor";
@@ -11,12 +9,7 @@ import { ServicosEditor } from "./ServicosEditor";
 import { SectionHelp } from "./SectionHelp";
 import { EspacoPrecosEditor } from "./EspacoPrecosEditor";
 import { brl } from "@/lib/format";
-import {
-  buildInitialForm,
-  normalizeForSave,
-  resolveDefaults,
-  temFaixasAtivas,
-} from "@/lib/orcamento-helpers";
+import { resolveDefaults, temFaixasAtivas, type FormState } from "@/lib/orcamento-helpers";
 import {
   type Orcamento,
   type SecoesVisiveis,
@@ -26,10 +19,29 @@ import {
 
 type Mode = "criar" | "editar";
 
+/**
+ * Modo formulário.
+ *
+ * NÃO tem estado próprio de propósito. Enquanto tinha, ele montava um
+ * `useState` a partir do registro do banco e ignorava o que estivesse aberto no
+ * modo visual: bastava editar na prévia, trocar de modo e salvar para gravar a
+ * versão antiga por cima. Pior, o auto-save do editor continuava rodando por
+ * trás, então os dois escreviam alternadamente.
+ *
+ * Agora os dois modos são duas telas do mesmo formulário. Salvar, excluir e
+ * duplicar também sobem para o pai, que já tinha tudo isso.
+ */
 type Props = {
   mode: Mode;
   orcamento?: Orcamento;
   config: ConfigGlobal;
+  form: FormState;
+  up: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
+  onSalvar: () => void;
+  onExcluir: () => void;
+  onDuplicar: () => void;
+  salvando: boolean;
+  erro: string | null;
 };
 
 const SECOES_LABEL: Array<[keyof SecoesVisiveis, string]> = [
@@ -50,12 +62,18 @@ function deepEqual<T>(a: T, b: T): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-export function OrcamentoForm({ mode, orcamento, config }: Props) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-
+export function OrcamentoForm({
+  mode,
+  orcamento,
+  config,
+  form,
+  up,
+  onSalvar,
+  onExcluir,
+  onDuplicar,
+  salvando,
+  erro,
+}: Props) {
   const defaults = resolveDefaults(config);
   const defaultSobre = defaults.sobre;
   const defaultDecoracao = defaults.decoracao;
@@ -64,64 +82,15 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
   const defaultServicos = defaults.servicos;
   const defaultPrecosEspaco = defaults.precosEspaco;
 
-  const [form, setForm] = useState(() => buildInitialForm(config, orcamento));
-
-  function up<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
-    setForm((f) => ({ ...f, [key]: value }));
-  }
-
   const usarFaixas = temFaixasAtivas(form.precos_espaco_por_dia);
   // Aluguel das faixas é só informativo — não entra no total.
   const total = [form.itens_espaco, form.itens_decoracao, form.itens_buffet]
     .flat()
     .reduce((acc, i) => acc + (i.qtd || 0) * (i.valor_unitario || 0), 0);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErro(null);
-    if (!form.cliente_nome.trim()) {
-      setErro("Informe o nome do cliente.");
-      return;
-    }
-    setSalvando(true);
-
-    const payload = normalizeForSave(form, defaults);
-
-    const url = mode === "criar" ? "/api/admin/orcamentos" : `/api/admin/orcamentos/${orcamento!.id}`;
-    const res = await fetch(url, {
-      method: mode === "criar" ? "POST" : "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    setSalvando(false);
-
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      setErro(body.error || "Erro ao salvar.");
-      return;
-    }
-    const data = await res.json();
-    startTransition(() => {
-      router.push(`/admin/${data.id}`);
-      router.refresh();
-    });
-  }
-
-  async function handleDelete() {
-    if (!orcamento) return;
-    if (!confirm("Tem certeza que deseja excluir este orçamento?")) return;
-    await fetch(`/api/admin/orcamentos/${orcamento.id}`, { method: "DELETE" });
-    router.push("/admin");
-    router.refresh();
-  }
-
-  async function handleDuplicate() {
-    if (!orcamento) return;
-    const res = await fetch(`/api/admin/orcamentos/${orcamento.id}/duplicate`, { method: "POST" });
-    if (res.ok) {
-      const data = await res.json();
-      router.push(`/admin/${data.id}`);
-    }
+    onSalvar();
   }
 
   const publicUrl = orcamento
@@ -298,16 +267,19 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
             titulo={temFaixasAtivas(form.precos_espaco_por_dia) ? "Outros itens do espaço (caução, extras)" : "Espaço"}
             itens={form.itens_espaco}
             onChange={(v) => up("itens_espaco", v)}
+            convidados={form.cliente_convidados}
           />
           <ItensEditor
             titulo="Decoração"
             itens={form.itens_decoracao}
             onChange={(v) => up("itens_decoracao", v)}
+            convidados={form.cliente_convidados}
           />
           <ItensEditor
             titulo="Buffet"
             itens={form.itens_buffet}
             onChange={(v) => up("itens_buffet", v)}
+            convidados={form.cliente_convidados}
           />
         </div>
         <div className="mt-4 px-6 py-4 rounded-2xl bg-oliva text-white">
@@ -410,6 +382,7 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
           <FotosPicker
             selecionadas={form.fotos_selecionadas}
             onChange={(v) => up("fotos_selecionadas", v)}
+            padrao={config.fotos_default || []}
           />
         </div>
       </section>
@@ -440,15 +413,15 @@ export function OrcamentoForm({ mode, orcamento, config }: Props) {
       <div className="sticky bottom-0 -mx-4 md:-mx-6 px-4 md:px-6 py-4 bg-white/90 backdrop-blur border-t border-areia/60 flex flex-wrap gap-3 justify-end">
         {mode === "editar" && (
           <>
-            <Button type="button" variant="ghost" onClick={handleDelete}>
+            <Button type="button" variant="ghost" onClick={onExcluir}>
               Excluir
             </Button>
-            <Button type="button" variant="outline" onClick={handleDuplicate}>
+            <Button type="button" variant="outline" onClick={onDuplicar}>
               Duplicar
             </Button>
           </>
         )}
-        <Button type="submit" disabled={salvando || isPending}>
+        <Button type="submit" disabled={salvando}>
           {salvando ? "Salvando..." : "Salvar orçamento"}
         </Button>
       </div>

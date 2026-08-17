@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
-import { ConfigForm } from "@/components/admin/ConfigForm";
+import { KitsManager } from "@/components/admin/KitsManager";
 import { requirePageAuth } from "@/lib/auth-guard";
 import { fetchConfig } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
-export default async function ConfiguracoesPage() {
+export default async function KitsPage() {
   await requirePageAuth();
   const config = await fetchConfig();
   if (!config) redirect("/admin");
-  return <ConfigForm config={config} />;
+  return <KitsManager config={config} />;
 }

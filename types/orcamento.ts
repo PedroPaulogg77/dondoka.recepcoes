@@ -12,11 +12,68 @@ export type SecoesVisiveis = {
   contato: boolean;
 };
 
+export type CategoriaKit = "buffet" | "decoracao";
+
+/**
+ * Grupo da biblioteca de itens: a fonte dos checkboxes na hora de montar um
+ * kit. É o cardápio bruto do fornecedor, sem preço e sem estar comprometido
+ * com nenhum pacote.
+ */
+export type BibliotecaGrupo = {
+  id: string;
+  categoria: CategoriaKit;
+  titulo: string;
+  itens: string[];
+};
+
+/**
+ * Grupo dentro de um kit.
+ *
+ * `nota` é o que separa "a lista inteira" de "escolha 4 destes". Sem ela o kit
+ * mente sobre o que o fornecedor entrega: "Salgados" é à vontade, mas "Doces"
+ * são 4 por convidado entre as 8 opções.
+ */
+export type KitGrupo = {
+  id: string;
+  titulo: string;
+  nota?: string;
+  itens: string[];
+};
+
+/**
+ * Pacote que a Dondoka vende. Não guarda preço: o valor é digitado no
+ * orçamento, caso a caso, porque muda por cliente e por negociação.
+ *
+ * Os itens são CÓPIA da biblioteca, não referência. Mexer na biblioteca depois
+ * não altera kit já montado. Mesma regra de "Padrão / Customizado" dos textos.
+ */
+export type Kit = {
+  id: string;
+  categoria: CategoriaKit;
+  nome: string;
+  grupos: KitGrupo[];
+  /** Linhas soltas do tipo "4 horas de evento", "Equipe de garçons". */
+  observacoes: string[];
+  /** Aviso interno quando o orçamento tem menos convidados. Nunca vai ao cliente. */
+  minimo_pessoas: number | null;
+};
+
 export type ItemOrcamento = {
   id: string;
   descricao: string;
   qtd: number;
   valor_unitario: number;
+
+  /**
+   * Sub-itens vindos de um kit. Aparecem para o cliente e nunca somam:
+   * o preço do kit é o `valor_unitario` da própria linha.
+   */
+  inclui?: KitGrupo[];
+  observacoes?: string[];
+  /** Origem no catálogo, só para saber se o kit foi editado depois. */
+  kit_id?: string;
+  /** Quando true, `qtd` acompanha o número de convidados do orçamento. */
+  por_pessoa?: boolean;
 };
 
 /**
@@ -94,6 +151,9 @@ export type ConfigGlobal = {
   buffet_dados: BuffetDados | null;
   servicos_opcionais_dados: ServicosOpcionaisDados | null;
   precos_espaco_por_dia: PrecosEspacoPorDia | null;
+  /** Null enquanto a 0005 não rodou ou enquanto o João não salvou nada ainda. */
+  biblioteca_itens: BibliotecaGrupo[] | null;
+  kits_catalogo: Kit[] | null;
   updated_at: string;
 };
 

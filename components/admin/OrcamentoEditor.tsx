@@ -21,6 +21,7 @@ import {
   resolveDefaults,
   type FormState,
 } from "@/lib/orcamento-helpers";
+import { resolveKits, sincronizarPorPessoa } from "@/lib/kits";
 import type { ConfigGlobal, Orcamento, SecoesVisiveis } from "@/types/orcamento";
 
 type Mode = "criar" | "editar";
@@ -43,6 +44,7 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
   const [menuAberto, setMenuAberto] = useState(false);
 
   const defaults = useMemo(() => resolveDefaults(config), [config]);
+  const kits = useMemo(() => resolveKits(config), [config]);
 
   const initial = useMemo(() => buildInitialForm(config, orcamento), [config, orcamento]);
   const [form, setForm] = useState<FormState>(initial);
@@ -84,6 +86,27 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
   const update = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
   }, []);
+
+  /**
+   * Item marcado como "por pessoa" tem a quantidade colada no número de
+   * convidados. Mudou de 50 para 60 na gaveta do cliente, o total do kit se
+   * refaz sozinho.
+   *
+   * `sincronizarPorPessoa` devolve o mesmo array quando nada muda, e o setForm
+   * devolve o mesmo objeto nesse caso, então isto não entra em laço nem suja o
+   * `dirty` à toa.
+   */
+  useEffect(() => {
+    setForm((f) => {
+      const espaco = sincronizarPorPessoa(f.itens_espaco, f.cliente_convidados);
+      const decoracao = sincronizarPorPessoa(f.itens_decoracao, f.cliente_convidados);
+      const buffet = sincronizarPorPessoa(f.itens_buffet, f.cliente_convidados);
+      if (espaco === f.itens_espaco && decoracao === f.itens_decoracao && buffet === f.itens_buffet) {
+        return f;
+      }
+      return { ...f, itens_espaco: espaco, itens_decoracao: decoracao, itens_buffet: buffet };
+    });
+  }, [form.cliente_convidados]);
 
   // Defer pra preview
   const deferredForm = useDeferredValue(form);
@@ -509,7 +532,19 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
       {/* Body */}
       {modoClassico ? (
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
-          <OrcamentoForm mode={mode} orcamento={orcamento} config={config} />
+          {/* Mesmo `form` do modo visual: trocar de modo não perde edição. */}
+          <OrcamentoForm
+            mode={mode}
+            orcamento={orcamento}
+            config={config}
+            form={form}
+            up={update}
+            onSalvar={() => handleSave()}
+            onExcluir={handleDelete}
+            onDuplicar={handleDuplicate}
+            salvando={salvando || isPending}
+            erro={erro}
+          />
         </div>
       ) : (
         <>
@@ -559,6 +594,7 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         onClose={() => setOpenDrawer(null)}
         selecionadas={form.fotos_selecionadas}
         onChange={(v) => update("fotos_selecionadas", v)}
+        padrao={config.fotos_default || []}
         onUndo={undoDrawer}
       />
       <DrawerDecoracao
@@ -599,6 +635,8 @@ export function OrcamentoEditor({ mode, orcamento, config }: Props) {
         precosEspaco={form.precos_espaco_por_dia}
         precosEspacoDefault={defaults.precosEspaco}
         onChangePrecosEspaco={(v) => update("precos_espaco_por_dia", v)}
+        kits={kits}
+        convidados={form.cliente_convidados}
         onUndo={undoDrawer}
       />
       <DrawerTexto

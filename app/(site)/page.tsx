@@ -8,13 +8,7 @@ import { VideoTour } from "@/components/site/VideoTour";
 import { FAQAccordion } from "@/components/site/FAQAccordion";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
-import {
-  IconCapacidade,
-  IconAmbientes,
-  IconClimatizado,
-  IconCozinha,
-  IconBanheiros,
-} from "@/components/ui/Icons";
+import { ICONES_DIFERENCIAL } from "@/components/ui/Icons";
 import { CARROSSEL_HOME, DIFERENCIAIS, FAQ_GERAL, FOTOS, TIPOS_EVENTO, VIDEOS } from "@/content/espaco";
 import { SITE, urlAbsoluta } from "@/lib/site-config";
 import { JsonLd, schemaFAQ, schemaVideo } from "@/lib/schema";
@@ -25,14 +19,6 @@ export const metadata: Metadata = {
     "Espaço para eventos de até 70 convidados em Belo Horizonte, no Lindéia (Barreiro). Dois ambientes, climatizado e com cozinha equipada. Solicite seu orçamento.",
   alternates: { canonical: urlAbsoluta("/") },
 };
-
-const ICONES = {
-  capacidade: IconCapacidade,
-  ambientes: IconAmbientes,
-  climatizado: IconClimatizado,
-  cozinha: IconCozinha,
-  banheiros: IconBanheiros,
-} as const;
 
 export default function HomePage() {
   // A FAQ da home mostra 6 perguntas — o schema declara exatamente essas 6,
@@ -121,7 +107,7 @@ export default function HomePage() {
               justify-center, as duas últimas centralizam sozinhas. */}
           <div className="mt-14 flex flex-wrap justify-center gap-6">
             {DIFERENCIAIS.map((item, i) => {
-              const Icone = ICONES[item.icone];
+              const Icone = ICONES_DIFERENCIAL[item.icone];
               return (
                 <Reveal
                   key={item.titulo}

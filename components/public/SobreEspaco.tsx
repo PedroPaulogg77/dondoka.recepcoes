@@ -2,15 +2,8 @@
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Reveal } from "@/components/ui/Reveal";
 import { TextoFormatado } from "./TextoFormatado";
-import { IconCapacidade, IconClimatizado, IconBanheiros, IconCozinha, IconKids } from "@/components/ui/Icons";
-
-const FEATURES = [
-  { icon: <IconCapacidade className="w-6 h-6" />, titulo: "Até 70 pessoas", descricao: "Capacidade confortável para eventos sociais e corporativos." },
-  { icon: <IconClimatizado className="w-6 h-6" />, titulo: "Climatizado", descricao: "Ambiente totalmente climatizado, em qualquer estação." },
-  { icon: <IconBanheiros className="w-6 h-6" />, titulo: "3 banheiros", descricao: "Sendo um com acessibilidade e fraldário." },
-  { icon: <IconCozinha className="w-6 h-6" />, titulo: "Cozinha equipada", descricao: "Estrutura completa para buffet e produção do evento." },
-  { icon: <IconKids className="w-6 h-6" />, titulo: "Espaço kids", descricao: "Área dedicada para as crianças aproveitarem com segurança." },
-];
+import { ICONES_DIFERENCIAL } from "@/components/ui/Icons";
+import { DIFERENCIAIS } from "@/content/espaco";
 
 export function SobreEspaco({ texto }: { texto: string | null }) {
   return (
@@ -27,18 +20,27 @@ export function SobreEspaco({ texto }: { texto: string | null }) {
           </Reveal>
         )}
 
-        <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {FEATURES.map((f, i) => (
-            <Reveal key={f.titulo} delay={i * 0.08}>
-              <div className="group h-full bg-white border border-areia/60 rounded-2xl p-7 shadow-soft hover:shadow-premium transition-all hover:-translate-y-1">
-                <div className="w-12 h-12 rounded-full bg-areia/40 text-oliva flex items-center justify-center group-hover:bg-oliva group-hover:text-white transition">
-                  {f.icon}
+        {/* Cinco itens numa grade de 3 colunas deixariam um buraco na última
+            linha. Flex com wrap centraliza as duas que sobram, igual à home. */}
+        <div className="mt-14 flex flex-wrap justify-center gap-6">
+          {DIFERENCIAIS.map((f, i) => {
+            const Icone = ICONES_DIFERENCIAL[f.icone];
+            return (
+              <Reveal
+                key={f.titulo}
+                delay={i * 0.08}
+                className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
+              >
+                <div className="group h-full bg-white border border-areia/60 rounded-2xl p-7 shadow-soft hover:shadow-premium transition-all hover:-translate-y-1">
+                  <div className="w-12 h-12 rounded-full bg-areia/40 text-oliva flex items-center justify-center group-hover:bg-oliva group-hover:text-white transition">
+                    <Icone className="w-6 h-6" />
+                  </div>
+                  <h3 className="mt-5 text-xl">{f.titulo}</h3>
+                  <p className="mt-2 text-sm text-carvao/65">{f.descricao}</p>
                 </div>
-                <h3 className="mt-5 text-xl">{f.titulo}</h3>
-                <p className="mt-2 text-sm text-carvao/65">{f.descricao}</p>
-              </div>
-            </Reveal>
-          ))}
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>

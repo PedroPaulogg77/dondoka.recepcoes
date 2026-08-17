@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { requirePageAuth } from "@/lib/auth-guard";
 import { fetchConfig } from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { SetupBanner } from "@/components/admin/SetupBanner";
@@ -10,6 +11,7 @@ import type { Orcamento } from "@/types/orcamento";
 export const dynamic = "force-dynamic";
 
 export default async function AdminHome() {
+  await requirePageAuth();
   const supabase = createServerSupabase();
   const [{ data }, config] = await Promise.all([
     supabase

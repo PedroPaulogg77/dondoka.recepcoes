@@ -1,7 +1,8 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { PrecosEspacoPorDia } from "@/types/orcamento";
 import { TIER_LABELS, type TierDia } from "@/lib/format";
+import { FAIXAS_DESLIGADAS, temFaixasAtivas } from "@/lib/orcamento-helpers";
 
 type Props = {
   value: PrecosEspacoPorDia | null;
@@ -14,8 +15,6 @@ type Props = {
 
 const TIERS: TierDia[] = ["seg_qui", "sex", "sab_dom"];
 
-const EMPTY: PrecosEspacoPorDia = { seg_qui: null, sex: null, sab_dom: null };
-
 function deepEqual(a: PrecosEspacoPorDia | null, b: PrecosEspacoPorDia | null): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
@@ -26,21 +25,32 @@ export function EspacoPrecosEditor({
   showResetVsDefault = false,
   defaultValue = null,
 }: Props) {
-  // Guarda último valor preenchido — pra restaurar se o usuário desligar e religar o toggle
-  const lastFilled = useRef<PrecosEspacoPorDia | null>(value);
-  if (value) lastFilled.current = value;
+  // Guarda o último valor preenchido, pra restaurar se desligar e religar.
+  const lastFilled = useRef<PrecosEspacoPorDia | null>(
+    temFaixasAtivas(value) ? value : null
+  );
+  if (temFaixasAtivas(value)) lastFilled.current = value;
 
-  const ativo = value !== null;
+  /**
+   * O ligado/desligado é estado local, não derivado do valor.
+   *
+   * Derivar de "tem algum valor preenchido" faria o toggle pular sozinho para
+   * desligado no instante em que ele apagasse os três campos para redigitar.
+   * Derivar de "não é null" não funciona mais, porque desligado agora grava um
+   * objeto de faixas nulas em vez de null.
+   */
+  const [ativo, setAtivo] = useState(() => temFaixasAtivas(value));
   const isCustom = showResetVsDefault && !deepEqual(value, defaultValue);
 
   function toggle() {
     if (ativo) {
-      // Desligando — guarda o que tinha e seta null
-      if (value) lastFilled.current = value;
-      onChange(null);
+      if (temFaixasAtivas(value)) lastFilled.current = value;
+      setAtivo(false);
+      // FAIXAS_DESLIGADAS em vez de null: null quer dizer "herdar o padrão".
+      onChange(FAIXAS_DESLIGADAS);
     } else {
-      // Ligando — restaura o último valor ou começa vazio
-      onChange(lastFilled.current ?? EMPTY);
+      setAtivo(true);
+      onChange(lastFilled.current ?? FAIXAS_DESLIGADAS);
     }
   }
 

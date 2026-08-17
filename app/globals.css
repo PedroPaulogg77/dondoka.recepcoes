@@ -164,7 +164,10 @@ html { scroll-behavior: smooth; }
   }
 
   /* ── Investimento — força categorias abertas ── */
-  .cat-items {
+  /* `.kit-inclusos` é o segundo nível: a lista de comida dentro da linha do
+     kit. Sem ele, o PDF sairia com o nome do pacote e nenhum item. */
+  .cat-items,
+  .kit-inclusos {
     height: auto !important;
     max-height: none !important;
     opacity: 1 !important;

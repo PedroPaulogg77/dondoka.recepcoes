@@ -75,6 +75,23 @@ export function temFaixasAtivas(precos: PrecosEspacoPorDia | null): boolean {
 }
 
 /**
+ * Sentinela de "desligado de propósito".
+ *
+ * `null` neste campo já quer dizer "herdar do config", então não servia
+ * também para dizer "não quero faixas neste orçamento": gravava null, e o
+ * `??` do OrcamentoView trazia o padrão global de volta. Na prática o toggle
+ * não desligava nada enquanto o padrão estivesse ativo.
+ *
+ * Um objeto com as três faixas nulas resolve sem coluna nova: `temFaixasAtivas`
+ * devolve false, e por não ser null ele atravessa o `??` intacto.
+ */
+export const FAIXAS_DESLIGADAS: PrecosEspacoPorDia = {
+  seg_qui: null,
+  sex: null,
+  sab_dom: null,
+};
+
+/**
  * Mescla o flag default com os toggles do orçamento, garantindo que toda chave
  * de SecoesVisiveis exista (mesmo em orçamentos antigos sem buffet/servicos).
  */

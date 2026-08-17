@@ -6,6 +6,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { brl } from "@/lib/format";
 import type { ItemOrcamento, PrecosEspacoPorDia } from "@/types/orcamento";
 import { temFaixasAtivas } from "@/lib/orcamento-helpers";
+import { contarInclusos, temInclusos } from "@/lib/kits";
 import { EspacoFaixas } from "./EspacoFaixas";
 
 type Categoria = {
@@ -18,7 +19,15 @@ function subtotal(itens: ItemOrcamento[]) {
 }
 
 function CategoryRow({ categoria }: { categoria: Categoria }) {
-  const [open, setOpen] = useState(false);
+  /**
+   * Categoria com kit já nasce aberta.
+   *
+   * O kit tem a própria lista para expandir, e com a categoria fechada por
+   * cima seriam dois cliques até o cardápio. O que interessa esconder é a
+   * lista de comida, não a linha do pacote.
+   */
+  const temKit = categoria.itens.some(temInclusos);
+  const [open, setOpen] = useState(temKit);
 
   // Auto-abre quando o navegador inicia print → garante PDF com tudo visível
   useEffect(() => {
@@ -73,30 +82,145 @@ function CategoryRow({ categoria }: { categoria: Categoria }) {
               className="overflow-hidden cat-items"
             >
               <div className="pb-4 pl-7 md:pl-9 pr-1 space-y-2">
-                {categoria.itens.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex justify-between items-baseline gap-4 py-1.5 border-b border-areia/30 last:border-b-0"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-carvao/85">{item.descricao}</p>
-                      {item.qtd > 1 && (
-                        <p className="text-[11px] text-carvao/50 mt-0.5">
-                          {item.qtd} × {brl(item.valor_unitario)}
-                        </p>
-                      )}
-                    </div>
-                    <span className="text-sm font-medium text-carvao tabular-nums whitespace-nowrap">
-                      {brl(item.qtd * item.valor_unitario)}
-                    </span>
-                  </li>
-                ))}
+                {categoria.itens.map((item) =>
+                  temInclusos(item) ? (
+                    <LinhaKit key={item.id} item={item} />
+                  ) : (
+                    <li
+                      key={item.id}
+                      className="flex justify-between items-baseline gap-4 py-1.5 border-b border-areia/30 last:border-b-0"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-carvao/85">{item.descricao}</p>
+                        {item.qtd > 1 && (
+                          <p className="text-[11px] text-carvao/50 mt-0.5">
+                            {item.qtd} × {brl(item.valor_unitario)}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-sm font-medium text-carvao tabular-nums whitespace-nowrap">
+                        {brl(item.qtd * item.valor_unitario)}
+                      </span>
+                    </li>
+                  )
+                )}
               </div>
             </motion.ul>
           )}
         </AnimatePresence>
       </div>
     </Reveal>
+  );
+}
+
+/**
+ * Linha de um item que veio de kit.
+ *
+ * Fica fechada, mostrando só nome e valor, e abre a lista de comida no toque.
+ * A setinha sozinha não bastava: sem a frase embaixo, ninguém percebe que há
+ * o cardápio inteiro escondido ali.
+ */
+function LinhaKit({ item }: { item: ItemOrcamento }) {
+  const [aberto, setAberto] = useState(false);
+
+  useEffect(() => {
+    function forceOpen() {
+      setAberto(true);
+    }
+    window.addEventListener("beforeprint", forceOpen);
+    window.addEventListener("prepare-print", forceOpen);
+    return () => {
+      window.removeEventListener("beforeprint", forceOpen);
+      window.removeEventListener("prepare-print", forceOpen);
+    };
+  }, []);
+
+  const grupos = (item.inclui ?? []).filter((g) => g.itens.length > 0);
+  const observacoes = item.observacoes ?? [];
+  const quantos = contarInclusos(item);
+
+  return (
+    <li className="border-b border-areia/30 last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setAberto((v) => !v)}
+        aria-expanded={aberto}
+        className="w-full py-2.5 flex justify-between items-baseline gap-4 text-left hover:bg-areia/10 rounded-md transition"
+      >
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-carvao/85 flex items-center gap-2">
+            <span className={`text-oliva text-xs transition-transform ${aberto ? "rotate-90" : ""}`} aria-hidden>
+              ▸
+            </span>
+            {item.descricao}
+          </p>
+          {item.qtd > 1 && (
+            <p className="text-[11px] text-carvao/50 mt-0.5 pl-5">
+              {item.qtd} × {brl(item.valor_unitario)}
+            </p>
+          )}
+          <p className="text-[11px] text-oliva/90 mt-1 pl-5">
+            {aberto ? "Toque para fechar" : `Toque para ver os ${quantos} itens inclusos`}
+          </p>
+        </div>
+        <span className="text-sm font-medium text-carvao tabular-nums whitespace-nowrap">
+          {brl(item.qtd * item.valor_unitario)}
+        </span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {aberto && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden kit-inclusos"
+          >
+            <div className="pb-4 pl-5 pr-1 space-y-3">
+              {grupos.map((g) => (
+                <div key={g.id}>
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="eyebrow text-bronze">{g.titulo}</span>
+                    {g.nota && (
+                      <span className="text-[11px] text-carvao/50 normal-case tracking-normal">
+                        {g.nota}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-sm text-carvao/75 leading-relaxed">
+                    {g.itens.map((nome, i) => (
+                      <span key={`${nome}-${i}`}>
+                        {nome}
+                        {i < g.itens.length - 1 && (
+                          <span className="mx-1.5 text-oliva/50">·</span>
+                        )}
+                      </span>
+                    ))}
+                  </p>
+                </div>
+              ))}
+
+              {observacoes.length > 0 && (
+                <div className="pt-1">
+                  <span className="eyebrow text-bronze">Também incluso</span>
+                  <p className="mt-1 text-sm text-carvao/75 leading-relaxed">
+                    {observacoes.map((o, i) => (
+                      <span key={`${o}-${i}`}>
+                        {o}
+                        {i < observacoes.length - 1 && (
+                          <span className="mx-1.5 text-oliva/50">·</span>
+                        )}
+                      </span>
+                    ))}
+                  </p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </li>
   );
 }
 

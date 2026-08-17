@@ -54,6 +54,8 @@ const FALLBACK = {
   buffet_dados: null,
   servicos_opcionais_dados: null,
   precos_espaco_por_dia: null,
+  biblioteca_itens: null,
+  kits_catalogo: null,
   updated_at: new Date().toISOString(),
 };
 

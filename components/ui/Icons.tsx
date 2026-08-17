@@ -65,6 +65,23 @@ export const IconAmbientes = (p?: IconProps) => base(
   p
 );
 
+/**
+ * Ícone de cada item de DIFERENCIAIS (content/espaco.ts).
+ *
+ * Mora aqui, e não na página, porque a lista é usada em dois lugares que
+ * precisam contar a mesma história sobre a casa: a home do site e a seção
+ * "Sobre o ambiente" da proposta. Enquanto a proposta tinha a própria lista
+ * escrita à mão, ela ficou anunciando espaço kids meses depois de a Camila
+ * tirar a área do site por não estar pronta.
+ */
+export const ICONES_DIFERENCIAL = {
+  capacidade: IconCapacidade,
+  ambientes: IconAmbientes,
+  climatizado: IconClimatizado,
+  cozinha: IconCozinha,
+  banheiros: IconBanheiros,
+} as const;
+
 // ===== Dados do evento =====
 export const IconUser = (p?: IconProps) => base(
   <>
