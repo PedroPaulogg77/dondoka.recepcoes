@@ -31,6 +31,16 @@ const FOTOS_BUNDLED = Object.entries(FOTOS)
   .filter(([chave]) => chave !== "espacoKids")
   .map(([, caminho]) => caminho as string);
 
+/** O que todo navegador desenha. HEIC de iPhone fica de fora de propósito. */
+const FORMATOS_ACEITOS = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+];
+
 function ehDoStorage(path: string) {
   return !path.startsWith("http") && !path.startsWith("/");
 }
@@ -51,6 +61,8 @@ export function FotosPicker({ selecionadas, onChange, padrao }: Props) {
   const [uploading, setUploading] = useState(false);
   const [apagando, setApagando] = useState<string | null>(null);
   const [limpando, setLimpando] = useState(false);
+  /** Caminhos cujo <Image> disparou onError nesta sessão. */
+  const [quebradas, setQuebradas] = useState<string[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -87,7 +99,19 @@ export function FotosPicker({ selecionadas, onChange, padrao }: Props) {
     const supabase = createBrowserSupabase();
     const novos: string[] = [];
     const falhas: string[] = [];
+    const recusadas: string[] = [];
     for (const file of Array.from(files)) {
+      /**
+       * Formato que o navegador não desenha vira quadro quebrado.
+       *
+       * O caso comum é foto de iPhone em HEIC: sobe sem erro, fica no bucket e
+       * nenhum navegador consegue exibir. Barrar aqui é melhor do que deixar a
+       * pessoa descobrir depois, olhando uma grade cheia de molduras vazias.
+       */
+      if (!FORMATOS_ACEITOS.includes(file.type)) {
+        recusadas.push(file.name);
+        continue;
+      }
       const safeName = file.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-");
       const path = `${Date.now()}-${safeName}`;
       const { error } = await supabase.storage.from("fotos-espaco").upload(path, file, {
@@ -99,7 +123,14 @@ export function FotosPicker({ selecionadas, onChange, padrao }: Props) {
     }
     setStorage((prev) => [...novos, ...prev]);
     onChange([...selecionadas, ...novos]);
-    if (falhas.length) setErro(`Não subiu: ${falhas.join(", ")}`);
+    const problemas: string[] = [];
+    if (recusadas.length) {
+      problemas.push(
+        `${recusadas.join(", ")}: formato que o navegador não abre. Se veio de iPhone, exporte como JPG antes de enviar.`
+      );
+    }
+    if (falhas.length) problemas.push(`Não subiu: ${falhas.join(", ")}`);
+    if (problemas.length) setErro(problemas.join(" "));
     setUploading(false);
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -195,7 +226,7 @@ export function FotosPicker({ selecionadas, onChange, padrao }: Props) {
               ref={inputRef}
               type="file"
               multiple
-              accept="image/*"
+              accept={FORMATOS_ACEITOS.join(",")}
               className="hidden"
               onChange={(e) => handleUpload(e.target.files)}
               disabled={uploading}
@@ -219,6 +250,40 @@ export function FotosPicker({ selecionadas, onChange, padrao }: Props) {
         {todas.map((path) => {
           const isSel = selecionadas.includes(path);
           const doStorage = ehDoStorage(path);
+
+          /**
+           * Arquivo que existe no bucket mas o navegador não desenha.
+           *
+           * A varredura de órfãs não alcança estes: para o Storage eles estão
+           * lá e inteiros. Em vez de moldura vazia sem explicação, mostra o
+           * nome do arquivo e o botão de apagar, que é a única saída.
+           */
+          if (quebradas.includes(path)) {
+            return (
+              <div
+                key={path}
+                className="relative aspect-[3/4] rounded-lg border-2 border-dashed border-rose-200 bg-rose-50/60 p-2 flex flex-col justify-between"
+              >
+                <div className="min-w-0">
+                  <p className="text-[10px] font-medium text-rose-700">Não abre</p>
+                  <p className="mt-0.5 text-[9px] text-rose-600/80 break-all line-clamp-4">
+                    {path}
+                  </p>
+                </div>
+                {doStorage && (
+                  <button
+                    type="button"
+                    onClick={() => apagarDoStorage(path)}
+                    disabled={apagando === path}
+                    className="w-full h-7 rounded-full bg-rose-500 text-white text-[10px] font-medium hover:bg-rose-600 disabled:opacity-50 transition"
+                  >
+                    {apagando === path ? "..." : "Apagar"}
+                  </button>
+                )}
+              </div>
+            );
+          }
+
           return (
             <div
               key={path}
@@ -240,6 +305,9 @@ export function FotosPicker({ selecionadas, onChange, padrao }: Props) {
                   fill
                   sizes="(max-width: 768px) 33vw, 20vw"
                   className="object-cover"
+                  onError={() =>
+                    setQuebradas((prev) => (prev.includes(path) ? prev : [...prev, path]))
+                  }
                 />
               </button>
 

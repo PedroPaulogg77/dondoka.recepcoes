@@ -185,6 +185,21 @@ export const BUFFET_FALLBACK: BuffetDados = {
   servico: "Equipe completa de cozinha e copa durante todo o evento, com louças, talheres, copos e guardanapos inclusos.",
 };
 
+/**
+ * Aluguel do salão enquanto não há config salvo.
+ *
+ * R$ 1.300 em qualquer dia da semana (João, ago/2026). Fica no código, e não
+ * só como algo a preencher em Configurações, porque "padrão para todos"
+ * significa que toda proposta já nasce com o valor certo, sem depender de
+ * alguém lembrar de configurar. Assim que o valor for salvo no painel, o do
+ * banco vence este.
+ */
+export const PRECOS_ESPACO_FALLBACK: PrecosEspacoPorDia = {
+  seg_qui: 1300,
+  sex: 1300,
+  sab_dom: 1300,
+};
+
 export const SERVICOS_FALLBACK: ServicosOpcionaisDados = {
   intro: "Pensando em proporcionar uma experiência ainda mais completa, a Dondoka Recepções oferece serviços adicionais para auxiliar na organização e execução do seu evento:",
   lista: ["Segurança", "Recepcionista", "Cerimonialista", "Apoio de limpeza", "Garçons", "Música ao vivo"],

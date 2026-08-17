@@ -12,8 +12,10 @@ import { Pagamento } from "./Pagamento";
 import { Contato } from "./Contato";
 import { FloatingActions } from "./FloatingActions";
 import { SectionChip } from "@/components/admin/SectionChip";
+import { temFaixasAtivas } from "@/lib/orcamento-helpers";
 import {
   BUFFET_FALLBACK,
+  PRECOS_ESPACO_FALLBACK,
   SERVICOS_FALLBACK,
   type ConfigGlobal,
   type Orcamento,
@@ -55,7 +57,15 @@ export function OrcamentoView({ orcamento, config, editorMode }: Props) {
 
   const buffetDados = orcamento.buffet_dados ?? config.buffet_dados ?? BUFFET_FALLBACK;
   const servicosDados = orcamento.servicos_opcionais_dados ?? config.servicos_opcionais_dados ?? SERVICOS_FALLBACK;
-  const precosEspaco = orcamento.precos_espaco_por_dia ?? config.precos_espaco_por_dia ?? null;
+  const precosEspaco =
+    orcamento.precos_espaco_por_dia ?? config.precos_espaco_por_dia ?? PRECOS_ESPACO_FALLBACK;
+
+  // Mesma condição do early return do Investimento.
+  const investimentoVazio =
+    !orcamento.itens_espaco.length &&
+    !orcamento.itens_decoracao.length &&
+    !orcamento.itens_buffet.length &&
+    !temFaixasAtivas(precosEspaco);
 
   const mensagemWpp = `Olá! Acabei de ver a proposta da Dondoka Recepções e gostaria de conversar. (Proposta: ${process.env.NEXT_PUBLIC_APP_URL}/orcamento/${orcamento.slug})`;
 
@@ -75,15 +85,15 @@ export function OrcamentoView({ orcamento, config, editorMode }: Props) {
         <Hero orcamento={orcamento} />
       </EditableWrap>
 
-      <EditableWrap editor={editorMode} sectionKey="sobre" toggleKey="sobre" label="Sobre o espaço" visivel={s.sobre}>
+      <EditableWrap editor={editorMode} sectionKey="sobre" toggleKey="sobre" label="Sobre o espaço" visivel={s.sobre} vazio={!sobreTexto}>
         {(visivel) => visivel && <SobreEspaco texto={sobreTexto} />}
       </EditableWrap>
 
-      <EditableWrap editor={editorMode} sectionKey="galeria" toggleKey="galeria" label="Galeria" visivel={s.galeria}>
+      <EditableWrap editor={editorMode} sectionKey="galeria" toggleKey="galeria" label="Galeria" visivel={s.galeria} vazio={!fotos.length}>
         {(visivel) => visivel && <Galeria fotos={fotos} />}
       </EditableWrap>
 
-      <EditableWrap editor={editorMode} sectionKey="decoracao" toggleKey="decoracao" label="Decoração" visivel={s.decoracao}>
+      <EditableWrap editor={editorMode} sectionKey="decoracao" toggleKey="decoracao" label="Decoração" visivel={s.decoracao} vazio={!decoracaoTexto && !orcamento.itens_decoracao.length}>
         {(visivel) => visivel && <Decoracao texto={decoracaoTexto} itens={orcamento.itens_decoracao} />}
       </EditableWrap>
 
@@ -99,7 +109,7 @@ export function OrcamentoView({ orcamento, config, editorMode }: Props) {
         {(visivel) => visivel && <DadosEvento orcamento={orcamento} />}
       </EditableWrap>
 
-      <EditableWrap editor={editorMode} sectionKey="investimento" toggleKey="investimento" label="Resumo da proposta" visivel={s.investimento}>
+      <EditableWrap editor={editorMode} sectionKey="investimento" toggleKey="investimento" label="Resumo da proposta" visivel={s.investimento} vazio={investimentoVazio}>
         {(visivel) =>
           visivel && (
             <Investimento
@@ -113,7 +123,7 @@ export function OrcamentoView({ orcamento, config, editorMode }: Props) {
         }
       </EditableWrap>
 
-      <EditableWrap editor={editorMode} sectionKey="pagamento" toggleKey="pagamento" label="Forma de pagamento" visivel={s.pagamento}>
+      <EditableWrap editor={editorMode} sectionKey="pagamento" toggleKey="pagamento" label="Forma de pagamento" visivel={s.pagamento} vazio={!condicoesPagamento}>
         {(visivel) => visivel && <Pagamento texto={condicoesPagamento} />}
       </EditableWrap>
 
@@ -137,10 +147,29 @@ type WrapProps = {
   toggleKey: keyof SecoesVisiveis | null;
   label: string;
   visivel?: boolean;
+  /**
+   * Marca que a seção não tem conteúdo para mostrar.
+   *
+   * Precisa vir de fora porque daqui não dá para saber: `children` devolve um
+   * elemento React, que é sempre "verdadeiro", mesmo quando o componente lá
+   * dentro renderiza `null`. Sem essa informação, a seção colapsava para altura
+   * zero e o chip flutuava por cima da seção seguinte. Era por isso que o
+   * Resumo da proposta parecia não existir no modo visual, e o João tinha que
+   * entrar no modo formulário só para digitar o primeiro valor.
+   */
+  vazio?: boolean;
   children: React.ReactNode | ((visivel: boolean) => React.ReactNode);
 };
 
-function EditableWrap({ editor, sectionKey, toggleKey, label, visivel = true, children }: WrapProps) {
+function EditableWrap({
+  editor,
+  sectionKey,
+  toggleKey,
+  label,
+  visivel = true,
+  vazio = false,
+  children,
+}: WrapProps) {
   // Sem editor: rota pública — render normal
   if (!editor) {
     if (typeof children === "function") return <>{children(visivel)}</>;
@@ -149,9 +178,35 @@ function EditableWrap({ editor, sectionKey, toggleKey, label, visivel = true, ch
 
   // Com editor: sempre renderiza a seção, mesmo se oculta (preview esmaecida)
   const childContent = typeof children === "function" ? children(true) : children;
-  if (!childContent) return null;
 
+  const vazia = vazio || !childContent;
   const isHidden = toggleKey !== null && !visivel;
+
+  if (vazia) {
+    return (
+      <div className="relative">
+        <SectionChip
+          label={label}
+          visivel={!isHidden}
+          onToggle={toggleKey ? () => editor.onToggleSecao(toggleKey) : undefined}
+          onEdit={() => editor.onEditSection(sectionKey)}
+        />
+        <button
+          type="button"
+          onClick={() => editor.onEditSection(sectionKey)}
+          className="w-full py-20 px-6 border-y border-dashed border-areia text-center transition hover:bg-areia/15"
+        >
+          <span className="block font-serif text-lg text-carvao/50">{label}</span>
+          <span className="mt-1 block text-sm text-carvao/40">
+            Vazia por enquanto. Toque para preencher.
+          </span>
+          <span className="mt-1 block text-xs text-carvao/35">
+            Enquanto estiver assim, o cliente não vê esta seção.
+          </span>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className={`relative ${isHidden ? "select-none" : ""}`}>

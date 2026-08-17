@@ -5,6 +5,7 @@ import { fetchConfig } from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { SetupBanner } from "@/components/admin/SetupBanner";
 import { OrcamentosList } from "@/components/admin/OrcamentosList";
+import { PRECOS_ESPACO_FALLBACK } from "@/types/orcamento";
 import { CriarExemploButton } from "@/components/admin/CriarExemploButton";
 import type { Orcamento } from "@/types/orcamento";
 
@@ -49,7 +50,7 @@ export default async function AdminHome() {
             coluna, e sem ele o aluguel sumiria do total da listagem. */}
         <OrcamentosList
           orcamentos={orcamentos}
-          precosEspacoPadrao={config?.precos_espaco_por_dia ?? null}
+          precosEspacoPadrao={config?.precos_espaco_por_dia ?? PRECOS_ESPACO_FALLBACK}
         />
       </div>
     </div>

@@ -1,5 +1,6 @@
 import {
   BUFFET_FALLBACK,
+  PRECOS_ESPACO_FALLBACK,
   SERVICOS_FALLBACK,
   SECOES_DEFAULT,
   type BuffetDados,
@@ -31,7 +32,7 @@ export function resolveDefaults(config: ConfigGlobal): ResolvedDefaults {
     pagamento: config.condicoes_pagamento || "",
     buffet: config.buffet_dados ?? BUFFET_FALLBACK,
     servicos: config.servicos_opcionais_dados ?? SERVICOS_FALLBACK,
-    precosEspaco: config.precos_espaco_por_dia ?? null,
+    precosEspaco: config.precos_espaco_por_dia ?? PRECOS_ESPACO_FALLBACK,
   };
 }
 
