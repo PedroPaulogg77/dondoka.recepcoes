@@ -44,7 +44,7 @@ const FAQ_PARCEIROS = [
   {
     pergunta: "A cozinha fica disponível para o buffet que eu contratar?",
     resposta:
-      "Fica. É cozinha industrial: fogão de 6 bocas com forno, freezer, cuba e bancadas em inox, além de passagem direta para o salão. A equipe que você contratar encontra tudo o que precisa, sem improviso e sem aluguel de estrutura extra.",
+      "Fica. É cozinha industrial: fogão de 4 bocas com forno, freezer, cuba e bancadas em inox. A equipe que você contratar encontra tudo o que precisa, sem improviso e sem aluguel de estrutura extra.",
   },
   {
     pergunta: "Como faço para conhecer os parceiros?",
@@ -138,7 +138,7 @@ export default function BuffetPage() {
             <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-premium">
               <Foto
                 src={FOTOS.cozinha}
-                alt="Cozinha industrial da Dondoka Recepções, com fogão de 6 bocas, bancadas em inox e freezer"
+                alt="Cozinha industrial da Dondoka Recepções, com fogão de 4 bocas com forno, bancadas em inox e freezer"
                 fill
                 sizes="(max-width: 768px) 90vw, 45vw"
                 className="object-cover"
@@ -152,8 +152,7 @@ export default function BuffetPage() {
               <span className="font-light italic text-bronze">Cozinha</span> industrial equipada
             </h2>
             <p className="mt-5 text-carvao/75">
-              Fogão de 6 bocas com forno, freezer, cuba e bancadas em inox, e uma janela de passagem direta
-              para o salão.
+              Fogão de 4 bocas com forno, freezer, cuba e bancadas em inox.
             </p>
             <p className="mt-4 text-carvao/75">
               Isso muda a vida de quem vai servir. A equipe do buffet chega e encontra tudo pronto, sem

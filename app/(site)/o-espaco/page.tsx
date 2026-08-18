@@ -40,9 +40,9 @@ const AMBIENTES = [
   {
     titulo: "Cozinha industrial equipada",
     foto: FOTOS.cozinha,
-    alt: "Cozinha industrial da Dondoka com fogão de 6 bocas, bancadas em inox, freezer e cuba",
+    alt: "Cozinha industrial da Dondoka com fogão de 4 bocas com forno, bancadas em inox, freezer e cuba",
     paragrafos: [
-      "Fogão industrial de 6 bocas com forno, freezer horizontal, cuba e bancadas em inox, e uma janela de passagem direta para o salão.",
+      "Fogão industrial de 4 bocas com forno, freezer horizontal, cuba e bancadas em inox.",
       "Isso resolve a vida de quem vai servir: a equipe do buffet que você contratar chega e encontra tudo pronto. Sem improviso e sem aluguel de estrutura extra.",
     ],
   },
@@ -61,7 +61,7 @@ const FICHA = [
   { label: "Capacidade", valor: "Até 70 convidados" },
   { label: "Ambientes", valor: "Salão principal + mezanino" },
   { label: "Climatização", valor: "Ar-condicionado nos 2 pavimentos" },
-  { label: "Cozinha", valor: "Industrial equipada, com passa-prates" },
+  { label: "Cozinha", valor: "Industrial, com fogão de 4 bocas e forno" },
   { label: "Banheiros", valor: "3, sendo 1 adaptado com fraldário" },
   { label: "Bairro", valor: "Lindéia, Barreiro, Belo Horizonte" },
   { label: "Também atende", valor: "Contagem e Ibirité" },

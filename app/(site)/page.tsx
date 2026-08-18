@@ -206,7 +206,7 @@ export default function HomePage() {
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-premium">
               <Foto
                 src={FOTOS.cozinha}
-                alt="Cozinha industrial da Dondoka Recepções, com fogão de 6 bocas, bancadas em inox e freezer"
+                alt="Cozinha industrial da Dondoka Recepções, com fogão de 4 bocas com forno, bancadas em inox e freezer"
                 fill
                 sizes="(max-width: 768px) 90vw, 45vw"
                 className="object-cover"
@@ -225,8 +225,8 @@ export default function HomePage() {
             </p>
             <p className="mt-4 text-carvao/75">
               Se você já tem fornecedores, pode trazer sem taxa. A cozinha industrial da casa fica à
-              disposição de quem for servir: fogão de 6 bocas, freezer, bancadas em inox e passagem direta
-              para o salão.
+              disposição de quem for servir: fogão de 4 bocas com forno, freezer, cuba e bancadas em
+              inox.
             </p>
             <Link
               href="/buffet"

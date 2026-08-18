@@ -6,7 +6,7 @@
  * Camila. Nada de adjetivo de catálogo.
  *
  * O motivo não é só honestidade: fato específico e verificável é exatamente o
- * que motores generativos extraem e citam. "Fogão industrial de 6 bocas" é
+ * que motores generativos extraem e citam. "Fogão industrial de 4 bocas com forno" é
  * citável; "estrutura completa" não é.
  *
  * ── DUAS COISAS QUE A DONDOKA NÃO FAZ ─────────────────────────────────────
@@ -19,6 +19,15 @@
  * ESPAÇO KIDS ainda não está pronto (Camila, jul/2026). Fora do site até
  * ficar. Existe foto do local (img_5931), guardada em FOTOS mas fora da
  * galeria.
+ *
+ * ── DOIS ERROS QUE JÁ ESTIVERAM AQUI (João, ago/2026) ─────────────────────
+ * 1. O fogão é de 4 BOCAS COM FORNO, não de 6. Estava errado em cinco lugares
+ *    do site ao mesmo tempo, porque cada página tinha a própria cópia da
+ *    frase.
+ * 2. NÃO EXISTE PASSA-PRATES nem janela de passagem para o salão. Isso foi
+ *    inventado em algum momento e se espalhou junto. A cozinha é fechada.
+ *
+ * Se aparecer de novo, é sinal de que alguém copiou de uma versão velha.
  */
 
 /**
@@ -46,7 +55,7 @@ export const DIFERENCIAIS = [
     icone: "cozinha",
     titulo: "Cozinha equipada",
     descricao:
-      "Fogão industrial de 6 bocas, freezer, bancadas em inox e passa-prates direto pro salão. Fica à disposição do buffet que você contratar.",
+      "Fogão industrial de 4 bocas com forno, freezer, cuba e bancadas em inox. Fica à disposição do buffet que você contratar.",
   },
   {
     icone: "banheiros",
@@ -290,7 +299,7 @@ export const FAQ_GERAL = [
   {
     pergunta: "Posso trazer meu próprio buffet?",
     resposta:
-      "Pode, sem taxa. A cozinha é industrial e equipada: fogão de 6 bocas com forno, freezer, cuba e bancadas em inox, além de passagem direta para o salão. A equipe que você contratar encontra tudo o que precisa.",
+      "Pode, sem taxa. A cozinha é industrial e equipada: fogão de 4 bocas com forno, freezer, cuba e bancadas em inox. A equipe que você contratar encontra tudo o que precisa.",
   },
   {
     pergunta: "O espaço tem acessibilidade?",
